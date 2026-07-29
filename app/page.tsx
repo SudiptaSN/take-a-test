@@ -37,10 +37,10 @@ const features = [
     ),
   },
   {
-    title: "Scale for Free",
-    body: "Runs on Vercel + Supabase free tiers. Handles thousands of candidates at roughly $0.",
+    title: "AI Roasts",
+    body: "Finish the exam and get utterly destroyed by our AI. It reads your wrong answers and roasts you mercilessly before explaining what you missed.",
     icon: (
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15.362 5.214A8.252 8.252 0 0 1 12 21 8.25 8.25 0 0 1 6.038 7.047 8.287 8.287 0 0 0 9 9.601a8.983 8.983 0 0 1 3.361-6.867 8.21 8.21 0 0 0 3 2.48Z" />
     ),
   },
 ];
@@ -67,8 +67,6 @@ export default function Home() {
             <span className="ml-1.5 text-[10px] uppercase tracking-wider text-red-400 border border-red-500/20 px-1.5 py-0.5 rounded bg-red-500/10">v1.0</span>
           </Link>
           <div className="flex items-center gap-1 text-sm">
-            <a href="https://github.com/SudiptaSN/take-a-test" target="_blank" rel="noreferrer"
-               className="px-3 py-1.5 rounded-md hover:bg-white/5 text-zinc-300 hover:text-white transition">GitHub</a>
             <Link href="/login" className="px-3 py-1.5 rounded-md hover:bg-white/5 text-zinc-300 hover:text-white transition">Sign in</Link>
             <Link href="/signup" className="ml-2 px-3 py-1.5 rounded-md bg-white text-zinc-900 font-medium hover:bg-zinc-200 transition">
               Get started
@@ -80,13 +78,6 @@ export default function Home() {
       {/* Hero */}
       <main className="max-w-6xl mx-auto px-6">
         <section className="pt-24 pb-20 text-center">
-          <a href="https://github.com/SudiptaSN/take-a-test" target="_blank" rel="noreferrer"
-             className="inline-flex items-center gap-2 text-xs text-zinc-300 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 hover:bg-white/10 transition">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-            Open source · MIT licensed
-            <span className="text-zinc-500">→</span>
-          </a>
-
           <h1 className="mt-6 text-5xl md:text-7xl font-bold tracking-tight leading-[1.05]">
             Proctored exams,
             <br />
@@ -96,8 +87,7 @@ export default function Home() {
           </h1>
 
           <p className="mt-6 max-w-2xl mx-auto text-lg text-zinc-400 leading-relaxed">
-            The ultimate exam platform. Safe Exam Browser lockdown, hardcore webcam tracking,
-            bulk AI imports, and public leaderboards. Hosted for free on Vercel & Supabase.
+            The definitive battleground. Survive the hardcore proctoring, climb the Wall of Flame, and try not to get absolutely roasted by the AI.
           </p>
 
           <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
@@ -108,17 +98,6 @@ export default function Home() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
               </svg>
             </Link>
-            <a href="https://assonfire.vercel.app" target="_blank" rel="noreferrer"
-               className="inline-flex items-center gap-2 rounded-md border border-white/10 bg-white/5 px-5 py-2.5 hover:bg-white/10 transition">
-              Live demo
-            </a>
-            <a href="https://github.com/SudiptaSN/take-a-test" target="_blank" rel="noreferrer"
-               className="inline-flex items-center gap-2 rounded-md border border-white/10 bg-white/5 px-5 py-2.5 hover:bg-white/10 transition">
-              <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
-                <path d="M12 .5a12 12 0 0 0-3.79 23.4c.6.1.82-.26.82-.58v-2c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.84 2.81 1.31 3.5 1 .1-.78.42-1.31.76-1.61-2.66-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.39 1.24-3.23-.13-.3-.54-1.52.11-3.17 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.28-1.55 3.29-1.23 3.29-1.23.66 1.65.25 2.87.12 3.17.77.84 1.23 1.92 1.23 3.23 0 4.61-2.81 5.62-5.48 5.92.43.37.82 1.1.82 2.22v3.29c0 .32.21.69.83.57A12 12 0 0 0 12 .5Z" />
-              </svg>
-              Star on GitHub
-            </a>
           </div>
         </section>
 
@@ -167,7 +146,7 @@ export default function Home() {
           <div className="text-center mb-12">
             <p className="text-sm font-bold text-red-500 uppercase tracking-wider">Features</p>
             <h2 className="mt-2 text-3xl md:text-4xl font-bold tracking-tight">What's in the box.</h2>
-            <p className="mt-3 text-zinc-400 max-w-xl mx-auto">Self-hosted. No per-candidate billing.</p>
+            <p className="mt-3 text-zinc-400 max-w-xl mx-auto">No cheating. No excuses.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -184,22 +163,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Stack strip */}
-        <section className="pb-24">
-          <div className="rounded-2xl border border-red-500/20 bg-gradient-to-br from-red-900/10 to-transparent p-8 md:p-10 text-center">
-            <p className="text-sm font-bold text-red-500 uppercase tracking-wider">Stack</p>
-            <h3 className="mt-2 text-2xl md:text-3xl font-bold tracking-tight">Built for Speed.</h3>
-            <p className="mt-3 text-zinc-400 max-w-xl mx-auto">
-              Postgres with Row-Level Security, Auth, and Storage. Safe Exam Browser is optional.
-              <code className="ml-1 rounded bg-white/10 px-1.5 py-0.5 text-xs">npx vercel deploy</code> to ship.
-            </p>
-            <div className="mt-7 flex flex-wrap items-center justify-center gap-2 text-xs text-zinc-400">
-              {["Next.js 15", "TypeScript", "Supabase", "Tailwind", "SEB", "MIT"].map((t) => (
-                <span key={t} className="rounded-full border border-white/10 bg-white/5 px-3 py-1">{t}</span>
-              ))}
-            </div>
-          </div>
-        </section>
+
       </main>
 
       {/* Footer */}
@@ -209,10 +173,6 @@ export default function Home() {
             © {new Date().getFullYear()} AssOnFire 🔥 · Hardcore Exams
           </div>
           <div className="flex items-center gap-5">
-            <a href="https://github.com/SudiptaSN/take-a-test" target="_blank" rel="noreferrer"
-               className="hover:text-zinc-300 transition">GitHub</a>
-            <a href="https://assonfire.vercel.app" target="_blank" rel="noreferrer"
-               className="hover:text-zinc-300 transition">Demo</a>
             <a href="https://safeexambrowser.org" target="_blank" rel="noreferrer"
                className="hover:text-zinc-300 transition">SEB</a>
           </div>
