@@ -64,7 +64,7 @@ export default function Home() {
           <Link href="/" className="flex items-center gap-2 font-bold tracking-tight text-xl">
             <span>🔥</span>
             <span className="bg-gradient-to-r from-orange-400 to-red-600 bg-clip-text text-transparent">AssOnFire</span>
-            <span className="ml-1.5 text-[10px] uppercase tracking-wider text-red-400 border border-red-500/20 px-1.5 py-0.5 rounded bg-red-500/10">v1.0</span>
+            <span className="ml-1.5 text-[10px] font-bold uppercase tracking-wider text-red-400 border border-red-500/30 px-1.5 py-0.5 rounded bg-red-500/10">UR-COOKED</span>
           </Link>
           <div className="flex items-center gap-1 text-sm">
             <Link href="/login" className="px-3 py-1.5 rounded-md hover:bg-white/5 text-zinc-300 hover:text-white transition">Sign in</Link>
