@@ -219,6 +219,8 @@ export default function EditTest() {
           Invite-only — only emails on the Invites list can see or take this test
         </label>
 
+
+
         <div className="border-t pt-3">
           <div className="text-sm font-medium">Access code</div>
           <p className="text-xs text-zinc-500 mt-1">Optional. If set, candidates must enter this code to start the test. Share it with invited candidates.</p>
@@ -250,7 +252,25 @@ export default function EditTest() {
         )}
       </div>
 
-      <h2 className="font-semibold mt-8">Questions</h2>
+      <div className="flex justify-between items-center mt-8">
+        <h2 className="font-semibold text-xl">Questions</h2>
+        <button 
+          onClick={async () => {
+            if (!confirm("Push results to candidates and the Discord Hall of Fame? This cannot be undone.")) return;
+            const res = await fetch(`/api/admin/tests/${id}/push-results`, { method: "POST" });
+            if (res.ok) {
+              alert("Results pushed successfully!");
+              updateTest({ results_published: true });
+            } else {
+              alert("Failed to push results");
+            }
+          }} 
+          className="btn text-sm bg-orange-600 hover:bg-orange-500 text-white shadow-[0_0_15px_rgba(234,88,12,0.3)]"
+          disabled={test.results_published}
+        >
+          {test.results_published ? "Results Published ✓" : "Push Results & Hall of Fame 🏆"}
+        </button>
+      </div>
       
       <details className="text-sm bg-zinc-50 border rounded p-3 mt-3 cursor-pointer group">
         <summary className="font-medium text-zinc-700">💡 Import questions from NotebookLM (or any AI)</summary>

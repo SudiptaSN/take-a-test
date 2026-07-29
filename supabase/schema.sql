@@ -20,6 +20,7 @@ create table profiles (
   gemini_key text,
   gemini_key_shared boolean not null default false,
   discord_webhook_url text,
+  discord_hall_of_fame_url text,
   created_at timestamptz default now()
 );
 
@@ -37,6 +38,9 @@ create table tests (
   available_until timestamptz,
   is_leaderboard_public boolean not null default false,
   is_hardcore_mode boolean not null default false,
+  results_published boolean not null default false,
+  reminder_24h_sent boolean not null default false,
+  reminder_1h_sent boolean not null default false,
   created_at timestamptz default now()
 );
 

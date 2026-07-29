@@ -100,15 +100,31 @@ export default async function TakeTest({ params }: { params: Promise<{ id: strin
   if (attempt.status !== "in_progress") {
     return (
       <main className="max-w-xl mx-auto p-10 text-center">
-        <h1 className="text-2xl font-bold">Test submitted</h1>
-        <p className="text-zinc-600 mt-2">Your response has been recorded. Results will be shared by your administrator.</p>
+        <h1 className="text-3xl font-bold mb-2">Test submitted</h1>
+        
+        {test.results_published ? (
+          <div className="bg-red-950/20 border border-red-900/50 rounded-xl p-6 mb-8">
+            <h2 className="text-lg font-semibold text-zinc-400 mb-1">Your Score</h2>
+            <div className="text-6xl font-bold text-orange-500">{attempt.score ?? 0} pts</div>
+          </div>
+        ) : (
+          <p className="text-zinc-400 mt-2 mb-8 bg-zinc-900/50 border border-zinc-800 p-4 rounded-lg">
+            Your response has been recorded. Results are currently hidden and will be pushed to the Discord Hall of Fame by the admin.
+          </p>
+        )}
+
         <div className="mt-6 flex justify-center gap-3">
           <a href="/dashboard" className="btn-secondary">Back to Dashboard</a>
-          {test.is_leaderboard_public && (
-            <a href={`/test/${id}/leaderboard`} className="btn">View Wall of Flame 🔥</a>
+          {test.is_leaderboard_public && test.results_published && (
+            <a href={`/test/${id}/leaderboard`} className="btn bg-orange-600 hover:bg-orange-500 border-none text-white shadow-[0_0_15px_rgba(234,88,12,0.3)]">View Wall of Flame 🔥</a>
           )}
         </div>
-        <RoastButton attemptId={attempt.id} />
+        
+        {test.results_published && (
+          <div className="mt-8 pt-8 border-t border-zinc-800">
+            <RoastButton attemptId={attempt.id} />
+          </div>
+        )}
       </main>
     );
   }

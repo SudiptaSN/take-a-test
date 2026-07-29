@@ -40,9 +40,12 @@ export default function InvitesPage() {
     if (!list.length) return alert("No valid emails found");
     setBusy(true);
     const rows = list.map((email) => ({ test_id: id, email, code: genCode() }));
-    const { error } = await supabase.from("invites").insert(rows);
+    const { error } = await supabase.from("invites").upsert(rows, { onConflict: "test_id,email", ignoreDuplicates: true });
     setBusy(false);
-    if (error) return alert(error.message);
+    if (error) {
+      console.error(error);
+      return alert(error.message || "Failed to generate invites. Make sure emails are unique.");
+    }
     setEmails("");
     load();
   };

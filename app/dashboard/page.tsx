@@ -46,7 +46,7 @@ export default async function Dashboard() {
               </div>
               <div>
                 {a?.status === "submitted" || a?.status === "terminated" ? (
-                  <span className="text-sm text-zinc-600">Completed</span>
+                  <Link href={`/test/${t.id}`} className="btn-secondary">View Results</Link>
                 ) : (
                   <Link href={`/test/${t.id}`} className="btn">{a ? "Resume" : "Start"}</Link>
                 )}

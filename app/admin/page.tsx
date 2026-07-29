@@ -14,7 +14,7 @@ export default async function AdminHome() {
 
   if (!user) redirect("/login");
 
-  const { data: profile, error } = await supabase.from("profiles").select("role, gemini_key, gemini_key_shared, discord_webhook_url").eq("id", user.id).single();
+  const { data: profile, error } = await supabase.from("profiles").select("role, gemini_key, gemini_key_shared, discord_webhook_url, discord_hall_of_fame_url").eq("id", user.id).single();
 
   console.log("--- DEBUG 2: Profile DB Result ---", profile);
   console.log("--- DEBUG 3: DB Error? ---", error);
@@ -38,7 +38,7 @@ export default async function AdminHome() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <AiSettingsForm initialKey={profile?.gemini_key} initialShared={profile?.gemini_key_shared || false} />
-        <DiscordSettingsForm initialUrl={profile?.discord_webhook_url} />
+        <DiscordSettingsForm initialUrl={profile?.discord_webhook_url} initialHofUrl={profile?.discord_hall_of_fame_url} />
       </div>
 
       <div className="mt-6 space-y-3">
