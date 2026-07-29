@@ -29,19 +29,19 @@ export default async function Dashboard() {
         <form action="/auth/signout" method="post"><button className="btn-secondary">Sign out</button></form>
       </div>
       <div className="mt-6 space-y-3">
-        {(tests || []).length === 0 && <p className="text-slate-600">No published tests yet.</p>}
+        {(tests || []).length === 0 && <p className="text-zinc-600">No published tests yet.</p>}
         {(tests || []).map((t) => {
           const a = attemptByTest.get(t.id);
           return (
             <div key={t.id} className="card flex items-center justify-between">
               <div>
                 <div className="font-semibold">{t.title}</div>
-                <div className="text-sm text-slate-600">{t.description}</div>
-                <div className="text-xs text-slate-500 mt-1">Duration: {t.duration_minutes} min</div>
+                <div className="text-sm text-zinc-600">{t.description}</div>
+                <div className="text-xs text-zinc-500 mt-1">Duration: {t.duration_minutes} min</div>
               </div>
               <div>
                 {a?.status === "submitted" || a?.status === "terminated" ? (
-                  <span className="text-sm text-slate-600">Completed</span>
+                  <span className="text-sm text-zinc-600">Completed</span>
                 ) : (
                   <Link href={`/test/${t.id}`} className="btn">{a ? "Resume" : "Start"}</Link>
                 )}

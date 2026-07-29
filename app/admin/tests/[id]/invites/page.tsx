@@ -89,12 +89,12 @@ Good luck.`);
 
   return (
     <main className="max-w-4xl mx-auto px-6 py-10">
-      <a href={`/admin/tests/${id}`} className="text-sm text-slate-600">← Back to test</a>
+      <a href={`/admin/tests/${id}`} className="text-sm text-zinc-600">← Back to test</a>
       <h1 className="text-2xl font-bold mt-2">Invites · {test?.title}</h1>
 
       <div className="card mt-6">
         <div className="text-sm font-medium">Add candidates by email</div>
-        <p className="text-xs text-slate-500 mt-1">Paste one email per line (or comma/space separated). Each gets a unique access code.</p>
+        <p className="text-xs text-zinc-500 mt-1">Paste one email per line (or comma/space separated). Each gets a unique access code.</p>
         <textarea className="input mt-2 min-h-[120px] font-mono text-sm" placeholder="alice@example.com&#10;bob@example.com" value={emails} onChange={(e) => setEmails(e.target.value)} />
         <div className="mt-2 flex gap-2">
           <button className="btn" onClick={addBatch} disabled={busy}>{busy ? "Adding…" : "Generate invites"}</button>
@@ -121,7 +121,7 @@ Good luck.`);
       </div>
 
       <table className="mt-3 w-full text-sm">
-        <thead className="text-left text-slate-500">
+        <thead className="text-left text-zinc-500">
           <tr><th className="py-2">Email</th><th>Code</th><th>Status</th><th></th></tr>
         </thead>
         <tbody>
@@ -129,9 +129,9 @@ Good luck.`);
             <tr key={i.id} className="border-t">
               <td className="py-2">{i.email}</td>
               <td><code className="font-mono">{i.code}</code></td>
-              <td>{i.used_at ? <span className="text-green-700">used {new Date(i.used_at).toLocaleString()}</span> : <span className="text-slate-500">pending</span>}</td>
+              <td>{i.used_at ? <span className="text-green-700">used {new Date(i.used_at).toLocaleString()}</span> : <span className="text-zinc-500">pending</span>}</td>
               <td className="text-right">
-                <a href={mailtoLink(i)} className="text-blue-700 underline mr-3">email</a>
+                <a href={mailtoLink(i)} className="text-red-700 underline mr-3">email</a>
                 <button className="text-red-600" onClick={() => remove(i.id)}>delete</button>
               </td>
             </tr>

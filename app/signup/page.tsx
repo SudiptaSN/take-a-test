@@ -30,7 +30,7 @@ export default function SignupPage() {
   return (
     <main className="max-w-md mx-auto px-6 py-16">
       <h1 className="text-2xl font-bold">Create candidate account</h1>
-      <p className="text-sm text-slate-600 mt-1">Already invited? Use the email your administrator sent invites to.</p>
+      <p className="text-sm text-zinc-600 mt-1">Already invited? Use the email your administrator sent invites to.</p>
       <form onSubmit={submit} className="mt-6 space-y-4">
         <input className="input" placeholder="Full name" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
         <input className="input" type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
@@ -38,7 +38,7 @@ export default function SignupPage() {
         {err && <p className="text-sm text-red-600">{err}</p>}
         <button className="btn w-full justify-center" disabled={loading}>{loading ? "Creating…" : "Sign up"}</button>
       </form>
-      <p className="mt-4 text-sm text-slate-600">Already have an account? <Link href="/login" className="underline">Sign in</Link></p>
+      <p className="mt-4 text-sm text-zinc-600">Already have an account? <Link href="/login" className="underline">Sign in</Link></p>
     </main>
   );
 }

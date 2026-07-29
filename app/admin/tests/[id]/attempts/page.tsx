@@ -17,10 +17,10 @@ export default async function Attempts({ params }: { params: Promise<{ id: strin
 
   return (
     <main className="max-w-4xl mx-auto px-6 py-10">
-      <a href="/admin" className="text-sm text-slate-600">← Back</a>
+      <a href="/admin" className="text-sm text-zinc-600">← Back</a>
       <h1 className="text-2xl font-bold mt-2">Attempts</h1>
       <table className="mt-6 w-full text-sm">
-        <thead className="text-left text-slate-500">
+        <thead className="text-left text-zinc-500">
           <tr><th className="py-2">Candidate</th><th>Status</th><th>Score</th><th>Started</th><th>Submitted</th><th></th></tr>
         </thead>
         <tbody>

@@ -23,11 +23,11 @@ export default async function TakeTest({ params }: { params: Promise<{ id: strin
       return (
         <main className="max-w-xl mx-auto p-10 text-center">
           <h1 className="text-2xl font-bold">You're not on the invite list</h1>
-          <p className="text-slate-600 mt-3">
+          <p className="text-zinc-600 mt-3">
             This exam is restricted to invited candidates. The email on your account
             (<code>{user.email}</code>) isn't on the list.
           </p>
-          <p className="text-slate-600 mt-2">
+          <p className="text-zinc-600 mt-2">
             If you were invited, sign out and sign back in with the exact email
             your administrator used.
           </p>
@@ -52,9 +52,9 @@ export default async function TakeTest({ params }: { params: Promise<{ id: strin
       return (
         <main className="max-w-xl mx-auto p-10 text-center">
           <h1 className="text-2xl font-bold">Open this test in Safe Exam Browser</h1>
-          <p className="text-slate-600 mt-3">
+          <p className="text-zinc-600 mt-3">
             This exam is locked to Safe Exam Browser (SEB). Install SEB, then open
-            the <code className="mx-1 px-1 bg-slate-100 rounded">.seb</code> config file
+            the <code className="mx-1 px-1 bg-zinc-100 rounded">.seb</code> config file
             your administrator sent you. SEB will load this page automatically.
           </p>
           <div className="mt-6 flex gap-3 justify-center">
@@ -82,7 +82,7 @@ export default async function TakeTest({ params }: { params: Promise<{ id: strin
     return (
       <main className="max-w-xl mx-auto p-10 text-center">
         <h1 className="text-2xl font-bold">Test submitted</h1>
-        <p className="text-slate-600 mt-2">Your response has been recorded. Results will be shared by your administrator.</p>
+        <p className="text-zinc-600 mt-2">Your response has been recorded. Results will be shared by your administrator.</p>
         <a href="/dashboard" className="btn mt-6 inline-flex">Back</a>
       </main>
     );
@@ -97,7 +97,7 @@ export default async function TakeTest({ params }: { params: Promise<{ id: strin
     return (
       <main className="max-w-md mx-auto p-10">
         <h1 className="text-2xl font-bold">{test.title}</h1>
-        <p className="text-slate-600 mt-2">Enter the access code your administrator sent you to start.</p>
+        <p className="text-zinc-600 mt-2">Enter the access code your administrator sent you to start.</p>
         <UnlockForm testId={id} />
       </main>
     );

@@ -159,7 +159,7 @@ export default function EditTest() {
 
   return (
     <main className="max-w-3xl mx-auto px-6 py-10">
-      <a href="/admin" className="text-sm text-slate-600">← Back</a>
+      <a href="/admin" className="text-sm text-zinc-600">← Back</a>
       <div className="flex items-center justify-between mt-2">
         <h1 className="text-2xl font-bold">Edit test</h1>
         <button
@@ -197,7 +197,7 @@ export default function EditTest() {
 
         <div className="border-t pt-3">
           <div className="text-sm font-medium">Access code</div>
-          <p className="text-xs text-slate-500 mt-1">Optional. If set, candidates must enter this code to start the test. Share it with invited candidates.</p>
+          <p className="text-xs text-zinc-500 mt-1">Optional. If set, candidates must enter this code to start the test. Share it with invited candidates.</p>
           <div className="flex gap-2 mt-2">
             <input className="input font-mono" placeholder="(none)" value={test.access_code || ""}
               onChange={(e) => updateTest({ access_code: e.target.value.toUpperCase() || null })} />
@@ -212,15 +212,15 @@ export default function EditTest() {
 
         {test.is_published && (
           <div className="space-y-2 border-t pt-3">
-            <div className="text-sm bg-slate-100 rounded p-2 break-all">
+            <div className="text-sm bg-zinc-100 rounded p-2 break-all">
               Share link: <code>{link}</code>
-              {test.access_code && <div className="text-xs text-slate-600 mt-1">Code: <code className="font-mono">{test.access_code}</code></div>}
+              {test.access_code && <div className="text-xs text-zinc-600 mt-1">Code: <code className="font-mono">{test.access_code}</code></div>}
             </div>
             <div className="text-sm bg-amber-50 border border-amber-200 rounded p-3">
               <b>Safe Exam Browser (recommended)</b>
-              <p className="mt-1 text-slate-700">Opening this link launches SEB in lockdown mode (no alt-tab, no screen share, no clipboard).</p>
-              <div className="mt-2"><a className="underline text-blue-700" href={`/api/seb/${id}`}>Download .seb config</a></div>
-              <p className="mt-1 text-xs text-slate-500">Candidates need SEB installed: <a className="underline" href="https://safeexambrowser.org/download_en.html" target="_blank" rel="noreferrer">safeexambrowser.org</a></p>
+              <p className="mt-1 text-zinc-700">Opening this link launches SEB in lockdown mode (no alt-tab, no screen share, no clipboard).</p>
+              <div className="mt-2"><a className="underline text-red-700" href={`/api/seb/${id}`}>Download .seb config</a></div>
+              <p className="mt-1 text-xs text-zinc-500">Candidates need SEB installed: <a className="underline" href="https://safeexambrowser.org/download_en.html" target="_blank" rel="noreferrer">safeexambrowser.org</a></p>
             </div>
           </div>
         )}
@@ -228,9 +228,9 @@ export default function EditTest() {
 
       <h2 className="font-semibold mt-8">Questions</h2>
       
-      <details className="text-sm bg-slate-50 border rounded p-3 mt-3 cursor-pointer group">
-        <summary className="font-medium text-slate-700">💡 Import questions from NotebookLM (or any AI)</summary>
-        <div className="mt-2 text-slate-600 space-y-2 cursor-text">
+      <details className="text-sm bg-zinc-50 border rounded p-3 mt-3 cursor-pointer group">
+        <summary className="font-medium text-zinc-700">💡 Import questions from NotebookLM (or any AI)</summary>
+        <div className="mt-2 text-zinc-600 space-y-2 cursor-text">
           <p>Copy and paste this exact prompt into NotebookLM:</p>
           <div className="bg-white border rounded p-2 text-xs font-mono select-all">
             Based on my sources, please generate 10 questions. Decide whether each should be a single-choice MCQ, multi-choice MCQ, or long answer. Format the output STRICTLY as a table with these columns:
@@ -254,8 +254,8 @@ export default function EditTest() {
         <button className="btn-secondary" onClick={() => addQuestion("mcq_single")}>+ MCQ (single)</button>
         <button className="btn-secondary" onClick={() => addQuestion("mcq_multi")}>+ MCQ (multi)</button>
         <button className="btn-secondary" onClick={() => addQuestion("long_text")}>+ Long answer</button>
-        <div className="w-px h-6 bg-slate-300 mx-2"></div>
-        <label className="btn-secondary cursor-pointer bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100">
+        <div className="w-px h-6 bg-zinc-300 mx-2"></div>
+        <label className="btn-secondary cursor-pointer bg-red-50 border-red-200 text-red-700 hover:bg-red-100">
           Upload CSV
           <input type="file" accept=".csv" className="hidden" onChange={importCSV} />
         </label>
@@ -327,7 +327,7 @@ export default function EditTest() {
                           if (url) setQuestions((arr) => arr.map((x, k) => k === i ? { ...x, options: x.options!.map((o) => o.id === opt.id ? { ...o, image_url: url } : o) } : x));
                         }} />
                       </label>
-                      <button className="text-sm text-slate-500" onClick={() => setQuestions((arr) => arr.map((x, k) => k === i ? { ...x, options: x.options!.filter((o) => o.id !== opt.id), correct: (x.correct || []).filter((c) => c !== opt.id) } : x))}>×</button>
+                      <button className="text-sm text-zinc-500" onClick={() => setQuestions((arr) => arr.map((x, k) => k === i ? { ...x, options: x.options!.filter((o) => o.id !== opt.id), correct: (x.correct || []).filter((c) => c !== opt.id) } : x))}>×</button>
                     </div>
                     {opt.image_url && <img src={opt.image_url} alt="" className="max-h-24 rounded border ml-7" />}
                   </div>

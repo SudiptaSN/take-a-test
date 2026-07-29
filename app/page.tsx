@@ -53,13 +53,13 @@ const Icon = ({ d }: { d: React.ReactNode }) => (
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 antialiased">
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 antialiased">
       {/* Background: dotted grid + radial glow */}
       <div className="pointer-events-none fixed inset-0 -z-10 bg-grid [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)]" />
       <div className="pointer-events-none fixed inset-x-0 top-0 -z-10 h-[700px] bg-radial-glow" />
 
       {/* Nav */}
-      <header className="sticky top-0 z-30 backdrop-blur supports-[backdrop-filter]:bg-slate-950/60 border-b border-white/5">
+      <header className="sticky top-0 z-30 backdrop-blur supports-[backdrop-filter]:bg-zinc-950/60 border-b border-white/5">
         <nav className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 font-bold tracking-tight text-xl">
             <span>🔥</span>
@@ -68,9 +68,9 @@ export default function Home() {
           </Link>
           <div className="flex items-center gap-1 text-sm">
             <a href="https://github.com/ExPl0iT-29/take-a-test" target="_blank" rel="noreferrer"
-               className="px-3 py-1.5 rounded-md hover:bg-white/5 text-slate-300 hover:text-white transition">GitHub</a>
-            <Link href="/login" className="px-3 py-1.5 rounded-md hover:bg-white/5 text-slate-300 hover:text-white transition">Sign in</Link>
-            <Link href="/signup" className="ml-2 px-3 py-1.5 rounded-md bg-white text-slate-900 font-medium hover:bg-slate-200 transition">
+               className="px-3 py-1.5 rounded-md hover:bg-white/5 text-zinc-300 hover:text-white transition">GitHub</a>
+            <Link href="/login" className="px-3 py-1.5 rounded-md hover:bg-white/5 text-zinc-300 hover:text-white transition">Sign in</Link>
+            <Link href="/signup" className="ml-2 px-3 py-1.5 rounded-md bg-white text-zinc-900 font-medium hover:bg-zinc-200 transition">
               Get started
             </Link>
           </div>
@@ -81,10 +81,10 @@ export default function Home() {
       <main className="max-w-6xl mx-auto px-6">
         <section className="pt-24 pb-20 text-center">
           <a href="https://github.com/ExPl0iT-29/take-a-test" target="_blank" rel="noreferrer"
-             className="inline-flex items-center gap-2 text-xs text-slate-300 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 hover:bg-white/10 transition">
+             className="inline-flex items-center gap-2 text-xs text-zinc-300 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 hover:bg-white/10 transition">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
             Open source · MIT licensed
-            <span className="text-slate-500">→</span>
+            <span className="text-zinc-500">→</span>
           </a>
 
           <h1 className="mt-6 text-5xl md:text-7xl font-bold tracking-tight leading-[1.05]">
@@ -95,7 +95,7 @@ export default function Home() {
             </span>
           </h1>
 
-          <p className="mt-6 max-w-2xl mx-auto text-lg text-slate-400 leading-relaxed">
+          <p className="mt-6 max-w-2xl mx-auto text-lg text-zinc-400 leading-relaxed">
             Self-hostable exam platform with Safe Exam Browser lockdown, webcam snapshots,
             invite-only allowlists, and server-side grading. Next.js + Supabase.
           </p>
@@ -129,9 +129,9 @@ export default function Home() {
               <span className="h-2.5 w-2.5 rounded-full bg-rose-500/70" />
               <span className="h-2.5 w-2.5 rounded-full bg-amber-400/70" />
               <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/70" />
-              <span className="ml-3 text-xs text-slate-500 font-mono">supabase/schema.sql · server-side grading</span>
+              <span className="ml-3 text-xs text-zinc-500 font-mono">supabase/schema.sql · server-side grading</span>
             </div>
-            <pre className="px-5 py-4 text-[13px] leading-relaxed font-mono text-slate-300 overflow-x-auto">
+            <pre className="px-5 py-4 text-[13px] leading-relaxed font-mono text-zinc-300 overflow-x-auto">
 {`-- Correct answers live in an admin-only table.
 -- Candidates can't read it — even via direct API calls.
 create table answer_keys (
@@ -157,7 +157,7 @@ create policy "admin_only" on answer_keys for all
           <div className="text-center mb-12">
             <p className="text-sm font-bold text-red-500 uppercase tracking-wider">Features</p>
             <h2 className="mt-2 text-3xl md:text-4xl font-bold tracking-tight">What's in the box.</h2>
-            <p className="mt-3 text-slate-400 max-w-xl mx-auto">Self-hosted. No per-candidate billing.</p>
+            <p className="mt-3 text-zinc-400 max-w-xl mx-auto">Self-hosted. No per-candidate billing.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -167,8 +167,8 @@ create policy "admin_only" on answer_keys for all
                 <div className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-orange-500/20 to-red-500/20 text-orange-500 ring-1 ring-inset ring-red-500/30 group-hover:bg-red-500 group-hover:text-white transition-colors">
                   <Icon d={f.icon} />
                 </div>
-                <h3 className="mt-4 font-semibold text-slate-100">{f.title}</h3>
-                <p className="mt-1.5 text-sm text-slate-400 leading-relaxed">{f.body}</p>
+                <h3 className="mt-4 font-semibold text-zinc-100">{f.title}</h3>
+                <p className="mt-1.5 text-sm text-zinc-400 leading-relaxed">{f.body}</p>
               </div>
             ))}
           </div>
@@ -179,11 +179,11 @@ create policy "admin_only" on answer_keys for all
           <div className="rounded-2xl border border-red-500/20 bg-gradient-to-br from-red-900/10 to-transparent p-8 md:p-10 text-center">
             <p className="text-sm font-bold text-red-500 uppercase tracking-wider">Stack</p>
             <h3 className="mt-2 text-2xl md:text-3xl font-bold tracking-tight">Built for Speed.</h3>
-            <p className="mt-3 text-slate-400 max-w-xl mx-auto">
+            <p className="mt-3 text-zinc-400 max-w-xl mx-auto">
               Postgres with Row-Level Security, Auth, and Storage. Safe Exam Browser is optional.
               <code className="ml-1 rounded bg-white/10 px-1.5 py-0.5 text-xs">npx vercel deploy</code> to ship.
             </p>
-            <div className="mt-7 flex flex-wrap items-center justify-center gap-2 text-xs text-slate-400">
+            <div className="mt-7 flex flex-wrap items-center justify-center gap-2 text-xs text-zinc-400">
               {["Next.js 15", "TypeScript", "Supabase", "Tailwind", "SEB", "MIT"].map((t) => (
                 <span key={t} className="rounded-full border border-white/10 bg-white/5 px-3 py-1">{t}</span>
               ))}
@@ -200,11 +200,11 @@ create policy "admin_only" on answer_keys for all
           </div>
           <div className="flex items-center gap-5">
             <a href="https://github.com/ExPl0iT-29/take-a-test" target="_blank" rel="noreferrer"
-               className="hover:text-slate-300 transition">GitHub</a>
+               className="hover:text-zinc-300 transition">GitHub</a>
             <a href="https://take-a-test.vercel.app" target="_blank" rel="noreferrer"
-               className="hover:text-slate-300 transition">Demo</a>
+               className="hover:text-zinc-300 transition">Demo</a>
             <a href="https://safeexambrowser.org" target="_blank" rel="noreferrer"
-               className="hover:text-slate-300 transition">SEB</a>
+               className="hover:text-zinc-300 transition">SEB</a>
           </div>
         </div>
       </footer>

@@ -33,7 +33,7 @@ function LoginInner() {
         {err && <p className="text-sm text-red-600">{err}</p>}
         <button className="btn w-full justify-center" disabled={loading}>{loading ? "Signing in…" : "Sign in"}</button>
       </form>
-      <p className="mt-4 text-sm text-slate-600">No account? <Link href="/signup" className="underline">Sign up</Link></p>
+      <p className="mt-4 text-sm text-zinc-600">No account? <Link href="/signup" className="underline">Sign up</Link></p>
     </main>
   );
 }

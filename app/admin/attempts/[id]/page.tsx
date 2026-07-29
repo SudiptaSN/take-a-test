@@ -36,9 +36,9 @@ export default async function AttemptDetail({ params }: { params: Promise<{ id: 
 
   return (
     <main className="max-w-4xl mx-auto px-6 py-10">
-      <a href="/admin" className="text-sm text-slate-600">← Back</a>
+      <a href="/admin" className="text-sm text-zinc-600">← Back</a>
       <h1 className="text-2xl font-bold mt-2">Attempt · {a?.test?.title}</h1>
-      <p className="text-slate-600">{a?.candidate?.full_name} · {a?.candidate?.email} · {a?.status} · <b>total score: {a?.score ?? "-"}</b></p>
+      <p className="text-zinc-600">{a?.candidate?.full_name} · {a?.candidate?.email} · {a?.status} · <b>total score: {a?.score ?? "-"}</b></p>
 
       {longAnswers.length > 0 && (
         <>
@@ -60,9 +60,9 @@ export default async function AttemptDetail({ params }: { params: Promise<{ id: 
           <div className="mt-2 space-y-2">
             {mcqAnswers.map((ans: any) => (
               <div key={ans.id} className="card">
-                <div className="text-xs text-slate-500">{ans.question?.type} · {ans.score ?? 0}/{ans.question?.points} pts</div>
+                <div className="text-xs text-zinc-500">{ans.question?.type} · {ans.score ?? 0}/{ans.question?.points} pts</div>
                 <div className="font-medium mt-1">{ans.question?.prompt}</div>
-                <div className="text-sm text-slate-700 mt-1">
+                <div className="text-sm text-zinc-700 mt-1">
                   Selected: <code>{JSON.stringify(ans.response?.selected || [])}</code>
                 </div>
               </div>
@@ -78,7 +78,7 @@ export default async function AttemptDetail({ params }: { params: Promise<{ id: 
             {signedSnapshots.map((s, i) => (
               <a key={i} href={s.url} target="_blank" rel="noreferrer" className="block">
                 <img src={s.url} alt="" className="aspect-square object-cover rounded border" />
-                <div className="text-[10px] text-slate-500 mt-0.5">{s.ts ? new Date(s.ts).toLocaleTimeString() : ""}</div>
+                <div className="text-[10px] text-zinc-500 mt-0.5">{s.ts ? new Date(s.ts).toLocaleTimeString() : ""}</div>
               </a>
             ))}
           </div>
@@ -89,8 +89,8 @@ export default async function AttemptDetail({ params }: { params: Promise<{ id: 
       <ul className="mt-2 text-sm max-h-72 overflow-y-auto border rounded p-2 bg-white">
         {(events || []).map((e) => (
           <li key={e.id} className="border-b last:border-0 py-1">
-            <code className="text-slate-500">{new Date(e.created_at).toLocaleTimeString()}</code> · <b className={e.kind.includes("blocked") || e.kind.includes("exit") || e.kind === "terminated" ? "text-red-600" : ""}>{e.kind}</b>
-            {e.detail ? <span className="text-slate-500"> {JSON.stringify(e.detail)}</span> : null}
+            <code className="text-zinc-500">{new Date(e.created_at).toLocaleTimeString()}</code> · <b className={e.kind.includes("blocked") || e.kind.includes("exit") || e.kind === "terminated" ? "text-red-600" : ""}>{e.kind}</b>
+            {e.detail ? <span className="text-zinc-500"> {JSON.stringify(e.detail)}</span> : null}
           </li>
         ))}
       </ul>

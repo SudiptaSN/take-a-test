@@ -33,12 +33,12 @@ export default async function AdminHome() {
         </div>
       </div>
       <div className="mt-6 space-y-3">
-        {(tests || []).length === 0 && <p className="text-slate-600">No tests yet.</p>}
+        {(tests || []).length === 0 && <p className="text-zinc-600">No tests yet.</p>}
         {(tests || []).map((t) => (
           <div key={t.id} className="card flex items-center justify-between">
             <div>
-              <div className="font-semibold">{t.title} {t.is_published ? <span className="text-xs text-green-700 ml-2">published</span> : <span className="text-xs text-slate-500 ml-2">draft</span>}</div>
-              <div className="text-sm text-slate-600">{t.description}</div>
+              <div className="font-semibold">{t.title} {t.is_published ? <span className="text-xs text-green-700 ml-2">published</span> : <span className="text-xs text-zinc-500 ml-2">draft</span>}</div>
+              <div className="text-sm text-zinc-600">{t.description}</div>
             </div>
             <div className="flex gap-2">
               <Link href={`/admin/tests/${t.id}`} className="btn-secondary">Edit</Link>
