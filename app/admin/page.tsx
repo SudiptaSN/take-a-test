@@ -6,9 +6,20 @@ import DeleteTestButton from "@/components/DeleteTestButton";
 export default async function AdminHome() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+
+  console.log("--- DEBUG 1: User ID ---", user?.id);
+
   if (!user) redirect("/login");
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-  if (profile?.role !== "admin") redirect("/dashboard");
+
+  const { data: profile, error } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+
+  console.log("--- DEBUG 2: Profile DB Result ---", profile);
+  console.log("--- DEBUG 3: DB Error? ---", error);
+
+  if (profile?.role !== "admin") {
+    console.log("--- DEBUG 4: Bouncing user! Role found was:", profile?.role);
+    redirect("/dashboard");
+  }
 
   const { data: tests } = await supabase.from("tests").select("*").order("created_at", { ascending: false });
 
