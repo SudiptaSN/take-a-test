@@ -101,6 +101,97 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Syllabus Section */}
+        <section className="pb-24">
+          <div className="mx-auto max-w-5xl rounded-3xl border border-red-900/50 bg-red-950/10 p-8 md:p-12 shadow-[0_0_80px_rgba(220,38,38,0.05)] relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-6 opacity-10 pointer-events-none">
+              <svg viewBox="0 0 24 24" fill="currentColor" className="w-64 h-64 text-red-500">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+              </svg>
+            </div>
+            
+            <div className="relative z-10">
+              <h2 className="text-sm font-bold text-red-500 uppercase tracking-widest mb-2">Operation: Ass On Fire</h2>
+              <h3 className="text-3xl md:text-4xl font-bold text-white mb-6">WBCHSE Semester 1 Sprint</h3>
+              
+              <div className="card bg-zinc-950/80 border-red-900/30 p-6 mb-8">
+                <h4 className="text-red-400 font-bold uppercase tracking-wider mb-4 border-b border-red-900/30 pb-2">Rules of Engagement</h4>
+                <ul className="space-y-3 text-zinc-300">
+                  <li><strong className="text-white">Format:</strong> EVERY single test is strictly <span className="text-orange-400 font-bold">40 Marks, All MCQ</span>, with a hard time limit.</li>
+                  <li><strong className="text-white">Scaling:</strong> Even if a test covers two chapters, the question setter must stretch the depth to hit 40 marks. This forces deep reading.</li>
+                  <li><strong className="text-white">Zero Excuses:</strong> If you haven't finished the chapters, you sit for the test anyway and take the failing grade. Let the panic drive the next day's grind.</li>
+                </ul>
+              </div>
+
+              <div className="mb-12">
+                <h4 className="text-xl font-bold text-white mb-4">📅 The High-Frequency Testing Calendar</h4>
+                <div className="overflow-x-auto rounded-xl border border-zinc-800">
+                  <table className="w-full text-left border-collapse bg-zinc-950">
+                    <thead>
+                      <tr className="border-b border-red-900/50 bg-red-950/30 text-red-400">
+                        <th className="p-3 font-semibold">Date</th>
+                        <th className="p-3 font-semibold">Test No.</th>
+                        <th className="p-3 font-semibold">Block 1</th>
+                        <th className="p-3 font-semibold">Block 2</th>
+                      </tr>
+                    </thead>
+                    <tbody className="text-zinc-300 divide-y divide-zinc-800">
+                      <tr><td className="p-3">Aug 04</td><td className="p-3">Test 1</td><td className="p-3">Physics</td><td className="p-3">Bengali A</td></tr>
+                      <tr><td className="p-3">Aug 06</td><td className="p-3">Test 2</td><td className="p-3">Chemistry</td><td className="p-3">English B</td></tr>
+                      <tr><td className="p-3">Aug 08</td><td className="p-3">Test 3</td><td className="p-3">Mathematics</td><td className="p-3">Bio / Comp Sc.</td></tr>
+                      <tr><td className="p-3">Aug 11</td><td className="p-3">Test 4</td><td className="p-3">Physics</td><td className="p-3">Bengali A</td></tr>
+                      <tr><td className="p-3">Aug 13</td><td className="p-3">Test 5</td><td className="p-3">Chemistry</td><td className="p-3">English B</td></tr>
+                      <tr><td className="p-3">Aug 15</td><td className="p-3">Test 6</td><td className="p-3">Mathematics</td><td className="p-3">Bio / Comp Sc.</td></tr>
+                      <tr><td className="p-3">Aug 18</td><td className="p-3">Test 7</td><td className="p-3">Physics</td><td className="p-3">Bengali A</td></tr>
+                      <tr><td className="p-3">Aug 20</td><td className="p-3">Test 8</td><td className="p-3">Chemistry</td><td className="p-3">English B</td></tr>
+                      <tr><td className="p-3">Aug 22</td><td className="p-3">Test 9</td><td className="p-3">Mathematics</td><td className="p-3">Bio / Comp Sc.</td></tr>
+                      <tr className="bg-orange-500/10 text-orange-400 font-bold"><td className="p-3">Aug 25</td><td className="p-3">MOCK 1</td><td className="p-3">Physics (Full)</td><td className="p-3">Math (Full)</td></tr>
+                      <tr className="bg-orange-500/10 text-orange-400 font-bold"><td className="p-3">Aug 27</td><td className="p-3">MOCK 2</td><td className="p-3">Chemistry (Full)</td><td className="p-3">Bio / CS (Full)</td></tr>
+                      <tr className="bg-orange-500/10 text-orange-400 font-bold"><td className="p-3">Aug 29</td><td className="p-3">MOCK 3</td><td className="p-3">Bengali A (Full)</td><td className="p-3">English B (Full)</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div className="space-y-8">
+                <div>
+                  <h4 className="text-xl font-bold text-orange-500 mb-3 border-b border-zinc-800 pb-2">📚 Phase 1: The Foundation (Aug 4 - Aug 8)</h4>
+                  <ul className="space-y-4 text-zinc-300">
+                    <li><strong className="text-white block mb-1">Test 1: Physics + Bengali A</strong>Physics: Unit 1 & 2 | Bengali A: 'পুঁইমাচা', 'বিড়াল', প্রাচীন বাংলা</li>
+                    <li><strong className="text-white block mb-1">Test 2: Chemistry + English B</strong>Chem: Unit 1, 2, 3 | Eng: 3 Prose Chapters + Unseen</li>
+                    <li><strong className="text-white block mb-1">Test 3: Mathematics + Bio/CS</strong>Math: Sets, Relations, Trig | Bio: Diversity | CS: Computer Sys, Logic Gates</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="text-xl font-bold text-orange-500 mb-3 border-b border-zinc-800 pb-2">⚙️ Phase 2: The Core Grind (Aug 11 - Aug 15)</h4>
+                  <ul className="space-y-4 text-zinc-300">
+                    <li><strong className="text-white block mb-1">Test 4: Physics + Bengali A</strong>Physics: Unit 3 & 4 | Bengali A: 'ঈশ্বরচন্দ্র বিদ্যাসাগর', 'সাম্যবাদী', মধ্যযুগ</li>
+                    <li><strong className="text-white block mb-1">Test 5: Chemistry + English B</strong>Chem: Unit 4 & 5 | Eng: 3 Poems + Grammar</li>
+                    <li><strong className="text-white block mb-1">Test 6: Mathematics + Bio/CS</strong>Math: Complex Nums, Inequalities | Bio: Structural Org | CS: Programming, Big-O</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="text-xl font-bold text-orange-500 mb-3 border-b border-zinc-800 pb-2">🧹 Phase 3: The Final Sweep (Aug 18 - Aug 22)</h4>
+                  <ul className="space-y-4 text-zinc-300">
+                    <li><strong className="text-white block mb-1">Test 7: Physics + Bengali A</strong>Physics: Unit 5 | Bengali A: আন্তর্জাতিক/ভারতীয়, ভাষা</li>
+                    <li><strong className="text-white block mb-1">Test 8: Chemistry + English B</strong>Chem: Unit 6 & 7 | Eng: Rapid Reader</li>
+                    <li><strong className="text-white block mb-1">Test 9: Mathematics + Bio/CS</strong>Math: P&C, Limits/Derivatives | Bio: Cell Structure | CS: Intro to C</li>
+                  </ul>
+                </div>
+                <div className="bg-red-950/50 p-6 rounded-xl border border-red-900/50">
+                  <h4 className="text-xl font-bold text-red-500 mb-3 border-b border-red-900/50 pb-2">🏆 Phase 4: The Mega Mocks (Aug 25 - Aug 29)</h4>
+                  <p className="text-zinc-400 mb-4 text-sm italic">80 Marks total per day (40 Marks per subject). Strict time gates. Full Semester 1 Syllabus.</p>
+                  <ul className="space-y-2 text-zinc-300 font-medium">
+                    <li>Mega Mock 1: Physics (Full) + Math (Full)</li>
+                    <li>Mega Mock 2: Chemistry (Full) + Bio/CS (Full)</li>
+                    <li>Mega Mock 3: Bengali A (Full) + English B (Full)</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Visual Break instead of terminal code */}
         <section className="pb-24">
           <div className="mx-auto max-w-5xl rounded-3xl border border-red-500/20 bg-zinc-900/50 backdrop-blur-md p-10 flex flex-col items-center text-center shadow-[0_0_80px_rgba(220,38,38,0.1)] relative overflow-hidden">

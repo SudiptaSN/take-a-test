@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import DeleteTestButton from "@/components/DeleteTestButton";
 import AiSettingsForm from "@/components/AiSettingsForm";
+import DiscordSettingsForm from "@/components/DiscordSettingsForm";
+import PingDiscordButton from "@/components/PingDiscordButton";
 
 export default async function AdminHome() {
   const supabase = await createClient();
@@ -12,7 +14,7 @@ export default async function AdminHome() {
 
   if (!user) redirect("/login");
 
-  const { data: profile, error } = await supabase.from("profiles").select("role, gemini_key, gemini_key_shared").eq("id", user.id).single();
+  const { data: profile, error } = await supabase.from("profiles").select("role, gemini_key, gemini_key_shared, discord_webhook_url").eq("id", user.id).single();
 
   console.log("--- DEBUG 2: Profile DB Result ---", profile);
   console.log("--- DEBUG 3: DB Error? ---", error);
@@ -34,7 +36,10 @@ export default async function AdminHome() {
         </div>
       </div>
 
-      <AiSettingsForm initialKey={profile?.gemini_key} initialShared={profile?.gemini_key_shared || false} />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <AiSettingsForm initialKey={profile?.gemini_key} initialShared={profile?.gemini_key_shared || false} />
+        <DiscordSettingsForm initialUrl={profile?.discord_webhook_url} />
+      </div>
 
       <div className="mt-6 space-y-3">
         {(tests || []).length === 0 && <p className="text-zinc-600">No tests yet.</p>}
@@ -45,6 +50,7 @@ export default async function AdminHome() {
               <div className="text-sm text-zinc-600">{t.description}</div>
             </div>
             <div className="flex gap-2">
+              <PingDiscordButton test={t} webhookUrl={profile?.discord_webhook_url} />
               <Link href={`/admin/tests/${t.id}`} className="btn-secondary">Edit</Link>
               <Link href={`/admin/tests/${t.id}/invites`} className="btn-secondary">Invites</Link>
               <Link href={`/admin/tests/${t.id}/attempts`} className="btn-secondary">Attempts</Link>

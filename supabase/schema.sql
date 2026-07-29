@@ -19,6 +19,7 @@ create table profiles (
   role user_role not null default 'candidate',
   gemini_key text,
   gemini_key_shared boolean not null default false,
+  discord_webhook_url text,
   created_at timestamptz default now()
 );
 
