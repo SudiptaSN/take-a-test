@@ -11,6 +11,26 @@ type Question = {
   points: number; image_url?: string | null;
 };
 
+function parseCSV(text: string): string[][] {
+  const result: string[][] = [];
+  let row: string[] = [];
+  let inQuotes = false;
+  let val = "";
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    const nextChar = text[i + 1];
+    if (char === '"' && inQuotes && nextChar === '"') { val += '"'; i++; }
+    else if (char === '"') { inQuotes = !inQuotes; }
+    else if (char === ',' && !inQuotes) { row.push(val); val = ""; }
+    else if ((char === '\n' || char === '\r') && !inQuotes) {
+      if (char === '\r' && nextChar === '\n') i++;
+      row.push(val); result.push(row); row = []; val = "";
+    } else { val += char; }
+  }
+  if (val || row.length > 0) { row.push(val); result.push(row); }
+  return result;
+}
+
 export default function EditTest() {
   const { id } = useParams<{ id: string }>();
   const supabase = createClient();
@@ -65,6 +85,55 @@ export default function EditTest() {
       options: isMcq ? [{ id: crypto.randomUUID(), text: "" }, { id: crypto.randomUUID(), text: "" }] : null,
       correct: isMcq ? [] : null, points: 1, image_url: null,
     }]);
+  };
+
+  const importCSV = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const text = event.target?.result as string;
+      const rows = parseCSV(text);
+      if (rows.length < 2) return alert("CSV must have a header row and at least one data row.");
+      
+      const newQuestions: Question[] = [];
+      for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        if (row.length < 2) continue;
+        
+        const typeStr = (row[0] || "").trim().toLowerCase();
+        let qType: QType = "mcq_single";
+        if (typeStr.includes("multi")) qType = "mcq_multi";
+        else if (typeStr.includes("long")) qType = "long_text";
+
+        const prompt = (row[1] || "").trim();
+        const optTexts = [row[2], row[3], row[4], row[5]].map(s => (s || "").trim()).filter(Boolean);
+        const correctStr = (row[6] || "").trim();
+        const pointsStr = (row[7] || "").trim();
+        const points = parseInt(pointsStr) || 1;
+
+        let options: Option[] | null = null;
+        let correct: string[] | null = null;
+
+        if (qType !== "long_text") {
+          options = optTexts.map(text => ({ id: crypto.randomUUID(), text }));
+          const correctIndices = correctStr.split(/[,&\s]+/).map(s => parseInt(s) - 1).filter(n => !isNaN(n) && n >= 0 && n < options!.length);
+          correct = correctIndices.map(idx => options![idx].id);
+        }
+
+        newQuestions.push({
+          test_id: id, position: 0, type: qType, prompt, options, correct, points, image_url: null
+        });
+      }
+
+      setQuestions(qs => {
+        const updated = [...qs, ...newQuestions];
+        return updated.map((q, idx) => ({ ...q, position: idx }));
+      });
+      alert(`Imported ${newQuestions.length} questions successfully! Note: Search for [IMAGE_REQUIRED] if your AI suggested images.`);
+    };
+    reader.readAsText(file);
+    e.target.value = "";
   };
 
   const saveAll = async () => {
@@ -158,10 +227,38 @@ export default function EditTest() {
       </div>
 
       <h2 className="font-semibold mt-8">Questions</h2>
-      <div className="mt-2 flex gap-2">
+      
+      <details className="text-sm bg-slate-50 border rounded p-3 mt-3 cursor-pointer group">
+        <summary className="font-medium text-slate-700">💡 Import questions from NotebookLM (or any AI)</summary>
+        <div className="mt-2 text-slate-600 space-y-2 cursor-text">
+          <p>Copy and paste this exact prompt into NotebookLM:</p>
+          <div className="bg-white border rounded p-2 text-xs font-mono select-all">
+            Based on my sources, please generate 10 questions. Decide whether each should be a single-choice MCQ, multi-choice MCQ, or long answer. Format the output STRICTLY as a table with these columns:
+            <br/><br/>
+            Type (use &quot;mcq_single&quot;, &quot;mcq_multi&quot;, or &quot;long_text&quot;)<br/>
+            Prompt (the question text. If the question needs an image to make sense, include &quot;[IMAGE_REQUIRED]&quot; in the text)<br/>
+            Option 1<br/>
+            Option 2<br/>
+            Option 3<br/>
+            Option 4<br/>
+            Correct (For single: e.g., &quot;1&quot;. For multi: e.g., &quot;1,3&quot;. For long text: leave blank)<br/>
+            Points (e.g., 1)
+            <br/><br/>
+            Leave options blank for long_text questions.
+          </div>
+          <p>After it generates the table, paste it into Google Sheets, download as CSV, and import it here.</p>
+        </div>
+      </details>
+
+      <div className="mt-4 flex flex-wrap gap-2 items-center">
         <button className="btn-secondary" onClick={() => addQuestion("mcq_single")}>+ MCQ (single)</button>
         <button className="btn-secondary" onClick={() => addQuestion("mcq_multi")}>+ MCQ (multi)</button>
         <button className="btn-secondary" onClick={() => addQuestion("long_text")}>+ Long answer</button>
+        <div className="w-px h-6 bg-slate-300 mx-2"></div>
+        <label className="btn-secondary cursor-pointer bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100">
+          Upload CSV
+          <input type="file" accept=".csv" className="hidden" onChange={importCSV} />
+        </label>
       </div>
 
       <div className="mt-4 space-y-4">

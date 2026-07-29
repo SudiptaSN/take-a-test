@@ -2,8 +2,8 @@ import "./globals.css";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Proctored Test Platform",
-  description: "Create tests and proctor candidates",
+  title: "AssOnFire 🔥 | Hardcore Proctored Tests",
+  description: "Create and proctor tests on AssOnFire.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
