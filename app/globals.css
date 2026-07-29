@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 html, body { height: 100%; }
-body { @apply bg-slate-50 text-slate-900; }
+body { @apply bg-zinc-950 text-zinc-100; }
 
 /* Landing page: dotted grid + radial glow (used by app/page.tsx) */
 .bg-grid {
@@ -13,10 +13,11 @@ body { @apply bg-slate-50 text-slate-900; }
 }
 .bg-radial-glow {
   background:
-    radial-gradient(60% 50% at 50% 0%, rgba(99,102,241,0.18) 0%, transparent 60%),
-    radial-gradient(40% 40% at 70% 10%, rgba(217,70,239,0.12) 0%, transparent 60%);
+    radial-gradient(60% 50% at 50% 0%, rgba(239, 68, 68, 0.15) 0%, transparent 60%),
+    radial-gradient(40% 40% at 70% 10%, rgba(249, 115, 22, 0.15) 0%, transparent 60%);
 }
-.btn { @apply inline-flex items-center px-4 py-2 rounded-md bg-slate-900 text-white text-sm font-medium hover:bg-slate-700 disabled:opacity-50; }
-.btn-secondary { @apply inline-flex items-center px-4 py-2 rounded-md border border-slate-300 bg-white text-sm font-medium hover:bg-slate-100; }
-.input { @apply w-full px-3 py-2 border border-slate-300 rounded-md text-sm; }
-.card { @apply bg-white border border-slate-200 rounded-lg p-4 shadow-sm; }
+
+.btn { @apply inline-flex items-center px-4 py-2 rounded-md bg-gradient-to-r from-orange-600 to-red-600 text-white text-sm font-semibold shadow-[0_0_15px_rgba(239,68,68,0.3)] hover:shadow-[0_0_25px_rgba(239,68,68,0.5)] hover:from-orange-500 hover:to-red-500 transition-all disabled:opacity-50 border border-red-500/30; }
+.btn-secondary { @apply inline-flex items-center px-4 py-2 rounded-md border border-zinc-700 bg-zinc-900/80 backdrop-blur-sm text-zinc-200 text-sm font-medium hover:bg-zinc-800 hover:border-zinc-500 transition-colors shadow-sm; }
+.input { @apply w-full px-3 py-2 border border-zinc-800 bg-zinc-900 rounded-md text-sm text-zinc-100 placeholder-zinc-500 focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none transition-colors; }
+.card { @apply bg-zinc-900/50 backdrop-blur-md border border-zinc-800/50 rounded-lg p-4 shadow-xl; }

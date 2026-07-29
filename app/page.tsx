@@ -61,10 +61,10 @@ export default function Home() {
       {/* Nav */}
       <header className="sticky top-0 z-30 backdrop-blur supports-[backdrop-filter]:bg-slate-950/60 border-b border-white/5">
         <nav className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
-            <img src="/logo.jpg" alt="Logo" className="h-6 w-6 rounded-md object-cover" />
-            <span>Take A Test</span>
-            <span className="ml-1.5 text-[10px] uppercase tracking-wider text-slate-400 border border-white/10 px-1.5 py-0.5 rounded">v1.0</span>
+          <Link href="/" className="flex items-center gap-2 font-bold tracking-tight text-xl">
+            <span>🔥</span>
+            <span className="bg-gradient-to-r from-orange-400 to-red-600 bg-clip-text text-transparent">AssOnFire</span>
+            <span className="ml-1.5 text-[10px] uppercase tracking-wider text-red-400 border border-red-500/20 px-1.5 py-0.5 rounded bg-red-500/10">v1.0</span>
           </Link>
           <div className="flex items-center gap-1 text-sm">
             <a href="https://github.com/ExPl0iT-29/take-a-test" target="_blank" rel="noreferrer"
@@ -87,11 +87,11 @@ export default function Home() {
             <span className="text-slate-500">→</span>
           </a>
 
-          <h1 className="mt-6 text-5xl md:text-6xl font-semibold tracking-tight leading-[1.05]">
+          <h1 className="mt-6 text-5xl md:text-7xl font-bold tracking-tight leading-[1.05]">
             Proctored exams,
             <br />
-            <span className="bg-gradient-to-r from-indigo-300 via-fuchsia-300 to-rose-300 bg-clip-text text-transparent">
-              without the per-seat fees.
+            <span className="bg-gradient-to-r from-orange-400 via-red-500 to-rose-600 bg-clip-text text-transparent">
+              that don't mess around.
             </span>
           </h1>
 
@@ -102,9 +102,9 @@ export default function Home() {
 
           <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
             <Link href="/signup"
-                  className="inline-flex items-center gap-2 rounded-md bg-white text-slate-900 font-medium px-5 py-2.5 hover:bg-slate-200 transition">
-              Get started
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="h-4 w-4">
+                  className="inline-flex items-center gap-2 rounded-md bg-gradient-to-r from-orange-600 to-red-600 text-white font-bold px-6 py-3 hover:scale-105 transition-transform shadow-[0_0_20px_rgba(239,68,68,0.4)]">
+              Ignite a test
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="h-4 w-4">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
               </svg>
             </Link>
@@ -124,7 +124,7 @@ export default function Home() {
 
         {/* Terminal preview */}
         <section className="pb-20">
-          <div className="mx-auto max-w-3xl rounded-xl border border-white/10 bg-slate-900/60 backdrop-blur shadow-2xl shadow-indigo-500/5 overflow-hidden">
+          <div className="mx-auto max-w-3xl rounded-xl border border-red-500/20 bg-zinc-900/80 backdrop-blur shadow-[0_0_50px_rgba(220,38,38,0.15)] overflow-hidden">
             <div className="flex items-center gap-2 px-4 py-2.5 border-b border-white/5 bg-black/20">
               <span className="h-2.5 w-2.5 rounded-full bg-rose-500/70" />
               <span className="h-2.5 w-2.5 rounded-full bg-amber-400/70" />
@@ -142,12 +142,12 @@ create table answer_keys (
 alter table answer_keys enable row level security;
 create policy "admin_only" on answer_keys for all
   using (exists(select 1 from profiles
-                where id = `}<span className="text-fuchsia-300">auth.uid()</span>{`
+                where id = `}<span className="text-orange-400">auth.uid()</span>{`
                   and role = 'admin'));
 
 -- Grading runs in a SECURITY DEFINER function so the
 -- client never has to fetch the correct answers.
-`}<span className="text-indigo-300">submit_attempt(</span>{`attempt_id, terminated`}<span className="text-indigo-300">)</span>{` → void`}
+`}<span className="text-red-400">submit_attempt(</span>{`attempt_id, terminated`}<span className="text-red-400">)</span>{` → void`}
             </pre>
           </div>
         </section>
@@ -155,16 +155,16 @@ create policy "admin_only" on answer_keys for all
         {/* Features */}
         <section className="pb-24">
           <div className="text-center mb-12">
-            <p className="text-sm font-medium text-indigo-300 uppercase tracking-wider">Features</p>
-            <h2 className="mt-2 text-3xl md:text-4xl font-semibold tracking-tight">What's in the box.</h2>
+            <p className="text-sm font-bold text-red-500 uppercase tracking-wider">Features</p>
+            <h2 className="mt-2 text-3xl md:text-4xl font-bold tracking-tight">What's in the box.</h2>
             <p className="mt-3 text-slate-400 max-w-xl mx-auto">Self-hosted. No per-candidate billing.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {features.map((f) => (
               <div key={f.title}
-                   className="group rounded-xl border border-white/10 bg-white/[0.02] p-5 hover:bg-white/[0.04] hover:border-white/20 transition">
-                <div className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500/20 to-fuchsia-500/20 text-indigo-300 ring-1 ring-inset ring-white/10">
+                   className="group rounded-xl border border-zinc-800 bg-zinc-900/40 p-5 hover:bg-zinc-800 hover:border-red-500/50 transition-all hover:shadow-[0_0_15px_rgba(239,68,68,0.1)]">
+                <div className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-orange-500/20 to-red-500/20 text-orange-500 ring-1 ring-inset ring-red-500/30 group-hover:bg-red-500 group-hover:text-white transition-colors">
                   <Icon d={f.icon} />
                 </div>
                 <h3 className="mt-4 font-semibold text-slate-100">{f.title}</h3>
@@ -176,9 +176,9 @@ create policy "admin_only" on answer_keys for all
 
         {/* Stack strip */}
         <section className="pb-24">
-          <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.04] to-transparent p-8 md:p-10 text-center">
-            <p className="text-sm font-medium text-indigo-300 uppercase tracking-wider">Stack</p>
-            <h3 className="mt-2 text-2xl md:text-3xl font-semibold tracking-tight">Next.js + Supabase.</h3>
+          <div className="rounded-2xl border border-red-500/20 bg-gradient-to-br from-red-900/10 to-transparent p-8 md:p-10 text-center">
+            <p className="text-sm font-bold text-red-500 uppercase tracking-wider">Stack</p>
+            <h3 className="mt-2 text-2xl md:text-3xl font-bold tracking-tight">Built for Speed.</h3>
             <p className="mt-3 text-slate-400 max-w-xl mx-auto">
               Postgres with Row-Level Security, Auth, and Storage. Safe Exam Browser is optional.
               <code className="ml-1 rounded bg-white/10 px-1.5 py-0.5 text-xs">npx vercel deploy</code> to ship.
@@ -193,10 +193,10 @@ create policy "admin_only" on answer_keys for all
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-white/5 mt-8">
-        <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-3 text-sm text-slate-500">
+      <footer className="border-t border-zinc-800 mt-8 bg-zinc-950">
+        <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-3 text-sm text-zinc-500">
           <div>
-            © {new Date().getFullYear()} Take A Test · MIT
+            © {new Date().getFullYear()} AssOnFire 🔥 · Hardcore Exams
           </div>
           <div className="flex items-center gap-5">
             <a href="https://github.com/ExPl0iT-29/take-a-test" target="_blank" rel="noreferrer"
