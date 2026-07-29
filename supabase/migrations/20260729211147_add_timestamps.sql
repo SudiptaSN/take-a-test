@@ -1,0 +1,1 @@
+ALTER TABLE tests ADD COLUMN IF NOT EXISTS available_from timestamptz, ADD COLUMN IF NOT EXISTS available_until timestamptz, ADD COLUMN IF NOT EXISTS is_leaderboard_public boolean not null default false;

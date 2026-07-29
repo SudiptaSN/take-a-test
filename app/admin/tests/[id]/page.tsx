@@ -7,6 +7,7 @@ type QType = "mcq_single" | "mcq_multi" | "long_text";
 type Option = { id: string; text: string; image_url?: string | null };
 type Question = {
   id?: string; test_id: string; position: number; type: QType;
+  section_title?: string | null;
   prompt: string; options: Option[] | null; correct: string[] | null;
   points: number; image_url?: string | null;
 };
@@ -81,7 +82,7 @@ export default function EditTest() {
   const addQuestion = (type: QType) => {
     const isMcq = type !== "long_text";
     setQuestions((qs) => [...qs, {
-      test_id: id, position: qs.length, type, prompt: "",
+      test_id: id, position: qs.length, type, prompt: "", section_title: null,
       options: isMcq ? [{ id: crypto.randomUUID(), text: "" }, { id: crypto.randomUUID(), text: "" }] : null,
       correct: isMcq ? [] : null, points: 1, image_url: null,
     }]);
@@ -122,7 +123,7 @@ export default function EditTest() {
         }
 
         newQuestions.push({
-          test_id: id, position: 0, type: qType, prompt, options, correct, points, image_url: null
+          test_id: id, position: 0, type: qType, prompt, section_title: null, options, correct, points, image_url: null
         });
       }
 
@@ -141,7 +142,7 @@ export default function EditTest() {
     await supabase.from("questions").delete().eq("test_id", id);
     if (questions.length) {
       const rows = questions.map((q, i) => ({
-        test_id: id, position: i, type: q.type, prompt: q.prompt,
+        test_id: id, position: i, type: q.type, section_title: q.section_title || null, prompt: q.prompt,
         options: q.options, points: q.points,
         image_url: q.image_url ?? null,
       }));
@@ -183,6 +184,24 @@ export default function EditTest() {
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" checked={test.is_published} onChange={(e) => updateTest({ is_published: e.target.checked })} />
           Published (candidates can see it)
+        </label>
+
+        <div className="grid grid-cols-2 gap-4">
+          <label className="block text-sm">Available From (Optional)
+            <input className="input mt-1" type="datetime-local" 
+                   value={test.available_from ? new Date(test.available_from).toISOString().slice(0,16) : ""} 
+                   onChange={(e) => updateTest({ available_from: e.target.value ? new Date(e.target.value).toISOString() : null })} />
+          </label>
+          <label className="block text-sm">Available Until (Optional)
+            <input className="input mt-1" type="datetime-local" 
+                   value={test.available_until ? new Date(test.available_until).toISOString().slice(0,16) : ""} 
+                   onChange={(e) => updateTest({ available_until: e.target.value ? new Date(e.target.value).toISOString() : null })} />
+          </label>
+        </div>
+
+        <label className="flex items-center gap-2 text-sm">
+          <input type="checkbox" checked={test.is_leaderboard_public || false} onChange={(e) => updateTest({ is_leaderboard_public: e.target.checked })} />
+          Enable "Wall of Flame" (Public Leaderboard for this test)
         </label>
 
         <label className="flex items-center gap-2 text-sm">
@@ -266,8 +285,16 @@ export default function EditTest() {
           <div key={i} className="card space-y-2">
             <div className="flex justify-between items-center">
               <b>Q{i + 1} · {q.type}</b>
-              <button className="text-red-600 text-sm" onClick={() => setQuestions((arr) => arr.filter((_, k) => k !== i))}>Remove</button>
+              <button className="text-red-500 text-sm" onClick={() => setQuestions((arr) => arr.filter((_, k) => k !== i))}>Remove</button>
             </div>
+            
+            <input className="input bg-zinc-950 border-dashed border-zinc-700 text-orange-400 placeholder-zinc-600 mb-2" 
+                   placeholder="Section Title (Optional) — Groups this and following questions" 
+                   value={q.section_title || ""} 
+                   onChange={(e) => {
+                     const v = e.target.value; setQuestions((arr) => arr.map((x, k) => k === i ? { ...x, section_title: v } : x));
+                   }} />
+
             <textarea className="input" placeholder="Question prompt" value={q.prompt} onChange={(e) => {
               const v = e.target.value; setQuestions((arr) => arr.map((x, k) => k === i ? { ...x, prompt: v } : x));
             }} />

@@ -30,6 +30,9 @@ create table tests (
   require_seb boolean not null default false,
   invite_only boolean not null default false,
   access_code text,
+  available_from timestamptz,
+  available_until timestamptz,
+  is_leaderboard_public boolean not null default false,
   created_at timestamptz default now()
 );
 
@@ -39,6 +42,7 @@ create table questions (
   test_id uuid not null references tests(id) on delete cascade,
   position int not null default 0,
   type question_type not null,
+  section_title text,
   prompt text not null,
   options jsonb,            -- [{id, text, image_url?}] for MCQ
   points int not null default 1,

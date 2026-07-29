@@ -15,6 +15,24 @@ export default async function TakeTest({ params }: { params: Promise<{ id: strin
   const { data: test } = await supabase.from("tests").select("*").eq("id", id).single();
   if (!test || !test.is_published) return <main className="p-10">Test not available.</main>;
 
+  const now = new Date();
+  if (test.available_from && now < new Date(test.available_from)) {
+    return (
+      <main className="max-w-xl mx-auto p-10 text-center">
+        <h1 className="text-2xl font-bold">Exam not started yet</h1>
+        <p className="mt-2 text-zinc-400">This test will be available starting {new Date(test.available_from).toLocaleString()}.</p>
+      </main>
+    );
+  }
+  if (test.available_until && now > new Date(test.available_until)) {
+    return (
+      <main className="max-w-xl mx-auto p-10 text-center">
+        <h1 className="text-2xl font-bold">Exam has ended</h1>
+        <p className="mt-2 text-zinc-400">This test closed on {new Date(test.available_until).toLocaleString()}.</p>
+      </main>
+    );
+  }
+
   // Invite-only allowlist gate (checked BEFORE creating an attempt)
   if (test.invite_only) {
     const { data: inv } = await supabase
@@ -67,7 +85,7 @@ export default async function TakeTest({ params }: { params: Promise<{ id: strin
   }
 
   const { data: questions } = await supabase
-    .from("questions").select("id, type, prompt, options, points, position, image_url")
+    .from("questions").select("id, type, prompt, section_title, options, points, position, image_url")
     .eq("test_id", id).order("position");
 
   let { data: attempt } = await supabase
@@ -83,7 +101,12 @@ export default async function TakeTest({ params }: { params: Promise<{ id: strin
       <main className="max-w-xl mx-auto p-10 text-center">
         <h1 className="text-2xl font-bold">Test submitted</h1>
         <p className="text-zinc-600 mt-2">Your response has been recorded. Results will be shared by your administrator.</p>
-        <a href="/dashboard" className="btn mt-6 inline-flex">Back</a>
+        <div className="mt-6 flex justify-center gap-3">
+          <a href="/dashboard" className="btn-secondary">Back to Dashboard</a>
+          {test.is_leaderboard_public && (
+            <a href={`/test/${id}/leaderboard`} className="btn">View Wall of Flame 🔥</a>
+          )}
+        </div>
       </main>
     );
   }

@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-type Q = { id: string; type: "mcq_single" | "mcq_multi" | "long_text"; prompt: string; options: { id: string; text: string; image_url?: string | null }[] | null; points: number; image_url?: string | null };
+type Q = { id: string; type: "mcq_single" | "mcq_multi" | "long_text"; prompt: string; section_title?: string | null; options: { id: string; text: string; image_url?: string | null }[] | null; points: number; image_url?: string | null };
 
 const SNAPSHOT_INTERVAL_MS = 15000;
 const MAX_VIOLATIONS = 3;
@@ -191,7 +191,12 @@ export default function ExamRoom({ test, questions, attempt }: { test: any; ques
       <main className="max-w-3xl mx-auto p-6">
         {q && (
           <div className="card">
-            <div className="text-sm text-slate-500">{q.type} · {q.points} pts</div>
+            {q.section_title && (
+              <div className="mb-4 pb-2 border-b border-zinc-800">
+                <h3 className="text-xl font-bold text-orange-500 uppercase tracking-wider">{q.section_title}</h3>
+              </div>
+            )}
+            <div className="text-sm text-zinc-500">{q.type} · {q.points} pts</div>
             <h2 className="text-lg font-semibold mt-1 whitespace-pre-wrap">{q.prompt}</h2>
             {q.image_url && <img src={q.image_url} alt="" className="mt-3 max-h-80 rounded border" onContextMenu={(e) => e.preventDefault()} draggable={false} />}
             <div className="mt-4 space-y-2">
