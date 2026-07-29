@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import DeleteTestButton from "@/components/DeleteTestButton";
+import AiSettingsForm from "@/components/AiSettingsForm";
 
 export default async function AdminHome() {
   const supabase = await createClient();
@@ -11,7 +12,7 @@ export default async function AdminHome() {
 
   if (!user) redirect("/login");
 
-  const { data: profile, error } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+  const { data: profile, error } = await supabase.from("profiles").select("role, gemini_key, gemini_key_shared").eq("id", user.id).single();
 
   console.log("--- DEBUG 2: Profile DB Result ---", profile);
   console.log("--- DEBUG 3: DB Error? ---", error);
@@ -32,6 +33,9 @@ export default async function AdminHome() {
           <form action="/auth/signout" method="post"><button className="btn-secondary">Sign out</button></form>
         </div>
       </div>
+
+      <AiSettingsForm initialKey={profile?.gemini_key} initialShared={profile?.gemini_key_shared || false} />
+
       <div className="mt-6 space-y-3">
         {(tests || []).length === 0 && <p className="text-zinc-600">No tests yet.</p>}
         {(tests || []).map((t) => (

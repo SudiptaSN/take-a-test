@@ -17,6 +17,8 @@ create table profiles (
   email text not null,
   full_name text,
   role user_role not null default 'candidate',
+  gemini_key text,
+  gemini_key_shared boolean not null default false,
   created_at timestamptz default now()
 );
 
@@ -33,6 +35,7 @@ create table tests (
   available_from timestamptz,
   available_until timestamptz,
   is_leaderboard_public boolean not null default false,
+  is_hardcore_mode boolean not null default false,
   created_at timestamptz default now()
 );
 

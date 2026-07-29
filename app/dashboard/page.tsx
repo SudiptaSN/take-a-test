@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import AiSettingsForm from "@/components/AiSettingsForm";
 
 export default async function Dashboard() {
   const supabase = await createClient();
@@ -24,10 +25,14 @@ export default async function Dashboard() {
 
   return (
     <main className="max-w-4xl mx-auto px-6 py-10">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Available tests</h1>
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-2xl font-bold">Candidate Dashboard</h1>
         <form action="/auth/signout" method="post"><button className="btn-secondary">Sign out</button></form>
       </div>
+      
+      <AiSettingsForm initialKey={profile?.gemini_key} initialShared={profile?.gemini_key_shared || false} />
+
+      <h2 className="text-xl font-bold">Available tests</h2>
       <div className="mt-6 space-y-3">
         {(tests || []).length === 0 && <p className="text-zinc-600">No published tests yet.</p>}
         {(tests || []).map((t) => {

@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
@@ -21,6 +21,14 @@ export default function ExamRoom({ test, questions, attempt }: { test: any; ques
   const [idx, setIdx] = useState(0);
   const [now, setNow] = useState<number>(Date.now());
   const endAt = useRef<number>(new Date(attempt.started_at).getTime() + test.duration_minutes * 60_000);
+
+  // Shuffle MCQ options once on mount so they stay stable during the test
+  const shuffledQuestions = useMemo(() => {
+    return questions.map((q) => {
+      if (!q.options) return q;
+      return { ...q, options: [...q.options].sort(() => Math.random() - 0.5) };
+    });
+  }, [questions]);
 
   const logEvent = useCallback(async (kind: string, detail?: any) => {
     await supabase.from("proctor_events").insert({ attempt_id: attempt.id, kind, detail });
@@ -154,15 +162,18 @@ export default function ExamRoom({ test, questions, attempt }: { test: any; ques
       <main className="max-w-2xl mx-auto p-10" ref={containerRef}>
         <h1 className="text-2xl font-bold">{test.title}</h1>
         <p className="text-slate-600 mt-2">{test.description}</p>
-        <div className="card mt-6 space-y-2 text-sm">
-          <p><b>Before you start:</b></p>
-          <ul className="list-disc pl-5 space-y-1">
-            <li>The test will run in <b>fullscreen</b> — exiting counts as a violation.</li>
-            <li>Your <b>webcam must be on</b>; snapshots are captured periodically.</li>
-            <li><b>Copy, paste, and right-click are disabled.</b></li>
-            <li>Switching tabs or windows is logged as a violation.</li>
-            <li>After {MAX_VIOLATIONS} violations, the test is auto-submitted.</li>
-            <li>Duration: <b>{test.duration_minutes} minutes</b>.</li>
+        <div className="card mt-6 space-y-2 text-sm border-red-900/50 bg-red-950/20">
+          <p className="text-red-500 font-bold text-base uppercase tracking-wider">⚠️ Strict Proctoring Active</p>
+          <ul className="list-disc pl-5 space-y-2 text-zinc-300 mt-3">
+            <li><b className="text-zinc-100">Absolute Fullscreen Lockdown:</b> Any attempt to exit fullscreen will trigger an immediate violation.</li>
+            <li><b className="text-zinc-100">Continuous Vision Surveillance:</b> Your webcam must remain active. Your environment is constantly monitored for unauthorized devices, extra people, and suspicious eye-movement.</li>
+            <li><b className="text-zinc-100">Environment Integrity:</b> Right-clicking, copying, pasting, and all keyboard shortcuts are strictly prohibited and actively blocked.</li>
+            <li><b className="text-zinc-100">Focus Tracking:</b> Looking away from the window or switching tabs will be instantly flagged.</li>
+            <li><b className="text-red-400">Zero Tolerance:</b> {MAX_VIOLATIONS} violations will result in the immediate and permanent termination of your exam.</li>
+            {test.is_hardcore_mode && (
+              <li className="text-orange-500 font-bold">Hardcore Mode: You cannot return to previous questions. Once you click next, your answer is locked permanently.</li>
+            )}
+            <li><b className="text-zinc-100">Duration:</b> {test.duration_minutes} minutes.</li>
           </ul>
         </div>
         {banner && <p className="text-red-600 text-sm mt-4">{banner}</p>}
@@ -171,16 +182,16 @@ export default function ExamRoom({ test, questions, attempt }: { test: any; ques
     );
   }
 
-  const q = questions[idx];
+  const q = shuffledQuestions[idx];
   const remaining = Math.max(0, Math.floor((endAt.current - now) / 1000));
   const mm = String(Math.floor(remaining / 60)).padStart(2, "0");
   const ss = String(remaining % 60).padStart(2, "0");
 
   return (
-    <div ref={containerRef} className="min-h-screen bg-slate-50 select-none" onCopy={(e) => e.preventDefault()} onPaste={(e) => e.preventDefault()} onContextMenu={(e) => e.preventDefault()}>
+    <div ref={containerRef} className="min-h-screen bg-zinc-950 select-none" onCopy={(e) => e.preventDefault()} onPaste={(e) => e.preventDefault()} onContextMenu={(e) => e.preventDefault()}>
       {banner && <div className="bg-red-600 text-white text-center py-2 text-sm">{banner}</div>}
-      <header className="flex items-center justify-between p-4 border-b bg-white">
-        <div><b>{test.title}</b> <span className="text-slate-500 text-sm">· Q{idx + 1}/{questions.length}</span></div>
+      <header className="flex items-center justify-between p-4 border-b border-zinc-800 bg-zinc-900">
+        <div className="text-zinc-200"><b>{test.title}</b> <span className="text-zinc-500 text-sm">· Q{idx + 1}/{shuffledQuestions.length}</span></div>
         <div className="flex items-center gap-4">
           <video ref={videoRef} className="w-24 h-16 bg-black rounded" muted playsInline />
           <div className="font-mono text-lg">{mm}:{ss}</div>
@@ -212,7 +223,7 @@ export default function ExamRoom({ test, questions, attempt }: { test: any; ques
                 const sel: string[] = answers[q.id]?.selected || [];
                 const checked = sel.includes(opt.id);
                 return (
-                  <label key={opt.id} className={`flex gap-2 items-center p-2 rounded border ${checked ? "border-slate-900 bg-slate-100" : "border-slate-200"}`}>
+                  <label key={opt.id} className={`flex gap-2 items-center p-3 rounded-lg border ${checked ? "border-orange-500 bg-orange-500/10" : "border-zinc-800 hover:border-zinc-700"}`}>
                     <input
                       type={q.type === "mcq_single" ? "radio" : "checkbox"}
                       name={`q-${q.id}`}
@@ -233,8 +244,12 @@ export default function ExamRoom({ test, questions, attempt }: { test: any; ques
               })}
             </div>
             <div className="mt-6 flex justify-between">
-              <button className="btn-secondary" disabled={idx === 0} onClick={() => setIdx((i) => i - 1)}>← Previous</button>
-              {idx < questions.length - 1 ? (
+              {!test.is_hardcore_mode ? (
+                <button className="btn-secondary" disabled={idx === 0} onClick={() => setIdx((i) => i - 1)}>← Previous</button>
+              ) : (
+                <div /> // Placeholder to keep Next button on the right
+              )}
+              {idx < shuffledQuestions.length - 1 ? (
                 <button className="btn" onClick={() => setIdx((i) => i + 1)}>Next →</button>
               ) : (
                 <button className="btn" onClick={() => submit(false)}>Finish & submit</button>

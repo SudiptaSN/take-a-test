@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import ExamRoom from "@/components/ExamRoom";
 import { SEB_ENFORCEMENT_ENABLED, verifySebRequest } from "@/lib/seb";
 import UnlockForm from "@/components/UnlockForm";
+import RoastButton from "@/components/RoastButton";
 
 export default async function TakeTest({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -107,6 +108,7 @@ export default async function TakeTest({ params }: { params: Promise<{ id: strin
             <a href={`/test/${id}/leaderboard`} className="btn">View Wall of Flame 🔥</a>
           )}
         </div>
+        <RoastButton attemptId={attempt.id} />
       </main>
     );
   }

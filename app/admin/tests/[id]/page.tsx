@@ -204,6 +204,11 @@ export default function EditTest() {
           Enable "Wall of Flame" (Public Leaderboard for this test)
         </label>
 
+        <label className="flex items-center gap-2 text-sm text-red-600 font-medium">
+          <input type="checkbox" checked={test.is_hardcore_mode || false} onChange={(e) => updateTest({ is_hardcore_mode: e.target.checked })} />
+          Enable "Hardcore Mode" (Candidates cannot go backward to change answers)
+        </label>
+
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" checked={test.require_seb || false} onChange={(e) => updateTest({ require_seb: e.target.checked })} />
           Require Safe Exam Browser — block normal browsers from opening this test
