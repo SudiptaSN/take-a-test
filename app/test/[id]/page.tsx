@@ -73,7 +73,7 @@ export default async function TakeTest({ params }: { params: Promise<{ id: strin
           <h1 className="text-2xl font-bold">Open this test in Safe Exam Browser</h1>
           <p className="text-zinc-600 mt-3">
             This exam is locked to Safe Exam Browser (SEB). Install SEB, then open
-            the <code className="mx-1 px-1 bg-zinc-100 rounded">.seb</code> config file
+            the <code className="mx-1 px-1 bg-zinc-800 text-zinc-300 rounded">.seb</code> config file
             your administrator sent you. SEB will load this page automatically.
           </p>
           <div className="mt-6 flex gap-3 justify-center">

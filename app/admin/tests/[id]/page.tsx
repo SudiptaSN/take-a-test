@@ -237,16 +237,16 @@ export default function EditTest() {
         </div>
 
         {test.is_published && (
-          <div className="space-y-2 border-t pt-3">
-            <div className="text-sm bg-zinc-100 rounded p-2 break-all">
+          <div className="space-y-2 border-t border-zinc-800 pt-3">
+            <div className="text-sm bg-zinc-900 border border-zinc-800 rounded p-2 break-all">
               Share link: <code>{link}</code>
-              {test.access_code && <div className="text-xs text-zinc-600 mt-1">Code: <code className="font-mono">{test.access_code}</code></div>}
+              {test.access_code && <div className="text-xs text-zinc-500 mt-1">Code: <code className="font-mono text-zinc-300">{test.access_code}</code></div>}
             </div>
-            <div className="text-sm bg-amber-50 border border-amber-200 rounded p-3">
-              <b>Safe Exam Browser (recommended)</b>
-              <p className="mt-1 text-zinc-700">Opening this link launches SEB in lockdown mode (no alt-tab, no screen share, no clipboard).</p>
-              <div className="mt-2"><a className="underline text-red-700" href={`/api/seb/${id}`}>Download .seb config</a></div>
-              <p className="mt-1 text-xs text-zinc-500">Candidates need SEB installed: <a className="underline" href="https://safeexambrowser.org/download_en.html" target="_blank" rel="noreferrer">safeexambrowser.org</a></p>
+            <div className="text-sm bg-amber-950/30 border border-amber-900/50 rounded p-3 text-amber-200">
+              <b className="text-amber-500">Safe Exam Browser (recommended)</b>
+              <p className="mt-1 text-amber-200/70">Opening this link launches SEB in lockdown mode (no alt-tab, no screen share, no clipboard).</p>
+              <div className="mt-2"><a className="underline text-amber-400 hover:text-amber-300" href={`/api/seb/${id}`}>Download .seb config</a></div>
+              <p className="mt-1 text-xs text-amber-200/50">Candidates need SEB installed: <a className="underline" href="https://safeexambrowser.org/download_en.html" target="_blank" rel="noreferrer">safeexambrowser.org</a></p>
             </div>
           </div>
         )}
@@ -272,11 +272,11 @@ export default function EditTest() {
         </button>
       </div>
       
-      <details className="text-sm bg-zinc-50 border rounded p-3 mt-3 cursor-pointer group">
-        <summary className="font-medium text-zinc-700">💡 Import questions from NotebookLM (or any AI)</summary>
-        <div className="mt-2 text-zinc-600 space-y-2 cursor-text">
+      <details className="text-sm bg-zinc-900 border border-zinc-800 rounded p-3 mt-3 cursor-pointer group">
+        <summary className="font-medium text-zinc-300">💡 Import questions from NotebookLM (or any AI)</summary>
+        <div className="mt-2 text-zinc-400 space-y-2 cursor-text">
           <p>Copy and paste this exact prompt into NotebookLM:</p>
-          <div className="bg-white border rounded p-2 text-xs font-mono select-all">
+          <div className="bg-zinc-950 border border-zinc-800 text-zinc-300 rounded p-2 text-xs font-mono select-all">
             Based on my sources, please generate 10 questions. Decide whether each should be a single-choice MCQ, multi-choice MCQ, or long answer. Format the output STRICTLY as a table with these columns:
             <br/><br/>
             Type (use &quot;mcq_single&quot;, &quot;mcq_multi&quot;, or &quot;long_text&quot;)<br/>

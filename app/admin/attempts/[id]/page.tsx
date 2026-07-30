@@ -86,7 +86,7 @@ export default async function AttemptDetail({ params }: { params: Promise<{ id: 
       )}
 
       <h2 className="font-semibold mt-8">Proctor events ({events?.length || 0})</h2>
-      <ul className="mt-2 text-sm max-h-72 overflow-y-auto border rounded p-2 bg-white">
+      <ul className="mt-2 text-sm max-h-72 overflow-y-auto border border-zinc-800 rounded p-2 bg-zinc-900/50">
         {(events || []).map((e) => (
           <li key={e.id} className="border-b last:border-0 py-1">
             <code className="text-zinc-500">{new Date(e.created_at).toLocaleTimeString()}</code> · <b className={e.kind.includes("blocked") || e.kind.includes("exit") || e.kind === "terminated" ? "text-red-600" : ""}>{e.kind}</b>

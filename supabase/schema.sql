@@ -156,7 +156,7 @@ create policy "admin manage invites" on invites for all
   using (exists(select 1 from profiles p where p.id = auth.uid() and p.role = 'admin'))
   with check (exists(select 1 from profiles p where p.id = auth.uid() and p.role = 'admin'));
 create policy "candidate read own invite" on invites for select to authenticated
-  using (lower(email) = lower((select email from auth.users where id = auth.uid())));
+  using (lower(email) = lower(auth.jwt() ->> 'email'));
 
 -- proctor events
 create policy "own events insert" on proctor_events for insert
