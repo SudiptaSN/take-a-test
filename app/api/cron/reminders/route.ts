@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient as createSupabaseJs } from "@supabase/supabase-js";
 
 export async function GET(req: Request) {
   try {
-    const supabase = await createClient();
+    const supabase = createSupabaseJs(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
     
     // Auth Check for Cron - we skip user auth since this is called by Vercel Cron
     // We fetch the admin's webhook URL

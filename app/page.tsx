@@ -2,6 +2,8 @@ import Link from "next/link";
 import { createClient as createSupabaseJs } from "@supabase/supabase-js";
 import CountdownTimer from "@/components/CountdownTimer";
 
+export const dynamic = "force-dynamic";
+
 const features = [
   {
     title: "Hardcore Proctoring",
