@@ -166,10 +166,14 @@ export default function EditTest() {
         <button
           className="text-sm text-red-600 underline"
           onClick={async () => {
-            if (!confirm(`Delete "${test.title}"?\n\nThis will also delete all questions, attempts, answers, invites, and proctor events for this test. This cannot be undone.`)) return;
-            const { error } = await supabase.from("tests").delete().eq("id", id);
-            if (error) return alert(error.message);
-            window.location.href = "/admin";
+            if (!confirm(`Delete "${test.title}"?\n\nThis will permanently delete the test, all candidate attempts, answers, proctor events, invites, AND all associated images from storage (question images and webcam snapshots).\n\nThis cannot be undone.`)) return;
+            const res = await fetch(`/api/admin/tests/${id}`, { method: "DELETE" });
+            if (res.ok) {
+              window.location.href = "/admin";
+            } else {
+              const data = await res.json();
+              alert(data.error || "Failed to delete test.");
+            }
           }}
         >Delete test</button>
       </div>

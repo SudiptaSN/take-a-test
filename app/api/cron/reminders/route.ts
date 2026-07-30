@@ -20,25 +20,46 @@ export async function GET(req: Request) {
       .select("id, title, available_from, reminder_24h_sent, reminder_1h_sent")
       .not("available_from", "is", null);
 
-    if (!tests) return NextResponse.json({ success: true, message: "No tests found" });
-
-    for (const test of tests) {
-      const testStart = new Date(test.available_from!);
-      
-      // 24 Hour Reminder
-      if (testStart <= twentyFourHoursFromNow && testStart > now && !test.reminder_24h_sent) {
-        await sendDiscordPing(admin.discord_webhook_url, test.id, `🚨 **T-MINUS 24 HOURS** 🚨\n\n**${test.title}** opens tomorrow at ${testStart.toLocaleTimeString()}.\nGet off Discord and start studying. No excuses.`);
-        await supabase.from("tests").update({ reminder_24h_sent: true }).eq("id", test.id);
-      }
-      
-      // 1 Hour Reminder
-      if (testStart <= oneHourFromNow && testStart > now && !test.reminder_1h_sent) {
-        await sendDiscordPing(admin.discord_webhook_url, test.id, `🔥 **FINAL WARNING** 🔥\n\n**${test.title}** opens in EXACTLY 1 HOUR.\nThe portal is arming. Prepare yourself.`);
-        await supabase.from("tests").update({ reminder_1h_sent: true }).eq("id", test.id);
+    if (tests) {
+      for (const test of tests) {
+        const testStart = new Date(test.available_from!);
+        
+        // 24 Hour Reminder
+        if (testStart <= twentyFourHoursFromNow && testStart > now && !test.reminder_24h_sent) {
+          await sendDiscordPing(admin.discord_webhook_url, test.id, `🚨 **T-MINUS 24 HOURS** 🚨\n\n**${test.title}** opens tomorrow at ${testStart.toLocaleTimeString()}.\nGet off Discord and start studying. No excuses.`);
+          await supabase.from("tests").update({ reminder_24h_sent: true }).eq("id", test.id);
+        }
+        
+        // 1 Hour Reminder
+        if (testStart <= oneHourFromNow && testStart > now && !test.reminder_1h_sent) {
+          await sendDiscordPing(admin.discord_webhook_url, test.id, `🔥 **FINAL WARNING** 🔥\n\n**${test.title}** opens in EXACTLY 1 HOUR.\nThe portal is arming. Prepare yourself.`);
+          await supabase.from("tests").update({ reminder_1h_sent: true }).eq("id", test.id);
+        }
       }
     }
 
-    return NextResponse.json({ success: true });
+    // --- 7-DAY SNAPSHOT AUTO-CLEANUP ---
+    // Find all snapshot events older than 7 days
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const { data: oldSnapshots } = await supabase
+      .from("proctor_events")
+      .select("id, detail")
+      .eq("kind", "snapshot")
+      .lt("created_at", sevenDaysAgo);
+
+    if (oldSnapshots && oldSnapshots.length > 0) {
+      const paths = oldSnapshots.map(e => e.detail?.path).filter(Boolean);
+      if (paths.length > 0) {
+        // Delete files from storage
+        await supabase.storage.from("snapshots").remove(paths);
+      }
+      // Delete the event records from database
+      const ids = oldSnapshots.map(e => e.id);
+      await supabase.from("proctor_events").delete().in("id", ids);
+      console.log(`Cleaned up ${paths.length} old snapshots.`);
+    }
+
+    return NextResponse.json({ success: true, testsProcessed: tests?.length || 0 });
   } catch (err: any) {
     console.error(err);
     return NextResponse.json({ error: err.message }, { status: 500 });

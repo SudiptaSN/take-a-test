@@ -21,6 +21,8 @@ create table profiles (
   gemini_key_shared boolean not null default false,
   discord_webhook_url text,
   discord_hall_of_fame_url text,
+  sprint_target_date timestamptz,
+  sprint_title text,
   created_at timestamptz default now()
 );
 

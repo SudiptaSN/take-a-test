@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { createClient as createSupabaseJs } from "@supabase/supabase-js";
+import CountdownTimer from "@/components/CountdownTimer";
 
 const features = [
   {
@@ -51,12 +53,14 @@ const Icon = ({ d }: { d: React.ReactNode }) => (
   </svg>
 );
 
-export default function Home() {
+export default async function Home() {
+  const adminDb = createSupabaseJs(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+  const { data: admin } = await adminDb.from("profiles").select("sprint_target_date, sprint_title").eq("role", "admin").maybeSingle();
+
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 antialiased">
-      {/* Background: dotted grid + radial glow */}
-      <div className="pointer-events-none fixed inset-0 -z-10 bg-grid [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)]" />
-      <div className="pointer-events-none fixed inset-x-0 top-0 -z-10 h-[700px] bg-radial-glow" />
+    <div className="min-h-screen bg-zinc-950 text-zinc-200 selection:bg-red-500/30 overflow-x-hidden flex flex-col relative">
+      <div className="fixed inset-0 pointer-events-none bg-grid opacity-30"></div>
+      <div className="fixed inset-0 pointer-events-none bg-radial-glow opacity-60"></div>
 
       {/* Nav */}
       <header className="sticky top-0 z-30 backdrop-blur supports-[backdrop-filter]:bg-zinc-950/60 border-b border-white/5">
@@ -77,6 +81,9 @@ export default function Home() {
 
       {/* Hero */}
       <main className="max-w-6xl mx-auto px-6">
+        {admin?.sprint_target_date && admin?.sprint_title && (
+          <CountdownTimer targetDate={admin.sprint_target_date} title={admin.sprint_title} />
+        )}
         <section className="pt-24 pb-20 text-center">
           <h1 className="mt-6 text-5xl md:text-7xl font-bold tracking-tight leading-[1.05]">
             Proctored exams,

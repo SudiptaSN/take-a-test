@@ -5,6 +5,7 @@ import DeleteTestButton from "@/components/DeleteTestButton";
 import AiSettingsForm from "@/components/AiSettingsForm";
 import DiscordSettingsForm from "@/components/DiscordSettingsForm";
 import PingDiscordButton from "@/components/PingDiscordButton";
+import LandingPageSettingsForm from "@/components/LandingPageSettingsForm";
 
 export default async function AdminHome() {
   const supabase = await createClient();
@@ -14,7 +15,7 @@ export default async function AdminHome() {
 
   if (!user) redirect("/login");
 
-  const { data: profile, error } = await supabase.from("profiles").select("role, gemini_key, gemini_key_shared, discord_webhook_url, discord_hall_of_fame_url").eq("id", user.id).single();
+  const { data: profile, error } = await supabase.from("profiles").select("role, gemini_key, gemini_key_shared, discord_webhook_url, discord_hall_of_fame_url, sprint_target_date, sprint_title").eq("id", user.id).single();
 
   console.log("--- DEBUG 2: Profile DB Result ---", profile);
   console.log("--- DEBUG 3: DB Error? ---", error);
@@ -34,6 +35,10 @@ export default async function AdminHome() {
           <Link href="/admin/new" className="btn">New test</Link>
           <form action="/auth/signout" method="post"><button className="btn-secondary">Sign out</button></form>
         </div>
+      </div>
+
+      <div className="my-6">
+        <LandingPageSettingsForm initialTitle={profile?.sprint_title} initialDate={profile?.sprint_target_date} />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
