@@ -42,9 +42,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       const top3 = validAttempts.slice(0, 3);
       let content = `🏆 **RESULTS ARE IN: ${test.title}** 🏆\n\nThe scores have been finalized. Here is the Hall of Fame:\n\n`;
       
-      if (top3.length > 0) content += `🥇 **1st Place:** ${top3[0].profile?.full_name || top3[0].profile?.email?.split('@')[0]} (${top3[0].score} pts)\n`;
-      if (top3.length > 1) content += `🥈 **2nd Place:** ${top3[1].profile?.full_name || top3[1].profile?.email?.split('@')[0]} (${top3[1].score} pts)\n`;
-      if (top3.length > 2) content += `🥉 **3rd Place:** ${top3[2].profile?.full_name || top3[2].profile?.email?.split('@')[0]} (${top3[2].score} pts)\n`;
+      if (top3.length > 0) content += `🥇 **1st Place:** ${(top3[0].profile as any)?.full_name || (top3[0].profile as any)?.email?.split('@')[0]} (${top3[0].score} pts)\n`;
+      if (top3.length > 1) content += `🥈 **2nd Place:** ${(top3[1].profile as any)?.full_name || (top3[1].profile as any)?.email?.split('@')[0]} (${top3[1].score} pts)\n`;
+      if (top3.length > 2) content += `🥉 **3rd Place:** ${(top3[2].profile as any)?.full_name || (top3[2].profile as any)?.email?.split('@')[0]} (${top3[2].score} pts)\n`;
       
       content += `\nAll candidates can now view their individual results and AI roasts on the platform.`;
 
