@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient as createSupabaseJs } from "@supabase/supabase-js";
 import CountdownTimer from "@/components/CountdownTimer";
+import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
@@ -59,6 +60,9 @@ export default async function Home() {
   const adminDb = createSupabaseJs(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
   const { data: admin } = await adminDb.from("profiles").select("sprint_target_date, sprint_title").eq("role", "admin").maybeSingle();
 
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-200 selection:bg-red-500/30 overflow-x-hidden flex flex-col relative">
       <div className="fixed inset-0 pointer-events-none bg-grid opacity-30"></div>
@@ -73,10 +77,18 @@ export default async function Home() {
             <span className="ml-1.5 text-[10px] font-bold uppercase tracking-wider text-red-400 border border-red-500/30 px-1.5 py-0.5 rounded bg-red-500/10">UR-COOKED</span>
           </Link>
           <div className="flex items-center gap-1 text-sm">
-            <Link href="/login" className="px-3 py-1.5 rounded-md hover:bg-white/5 text-zinc-300 hover:text-white transition">Sign in</Link>
-            <Link href="/signup" className="ml-2 px-3 py-1.5 rounded-md bg-white text-zinc-900 font-medium hover:bg-zinc-200 transition">
-              Get started
-            </Link>
+            {user ? (
+              <Link href="/dashboard" className="px-3 py-1.5 rounded-md bg-white text-zinc-900 font-medium hover:bg-zinc-200 transition">
+                Go to Dashboard
+              </Link>
+            ) : (
+              <>
+                <Link href="/login" className="px-3 py-1.5 rounded-md hover:bg-white/5 text-zinc-300 hover:text-white transition">Sign in</Link>
+                <Link href="/signup" className="ml-2 px-3 py-1.5 rounded-md bg-white text-zinc-900 font-medium hover:bg-zinc-200 transition">
+                  Get started
+                </Link>
+              </>
+            )}
           </div>
         </nav>
       </header>
@@ -100,9 +112,9 @@ export default async function Home() {
           </p>
 
           <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
-            <Link href="/signup"
+            <Link href={user ? "/dashboard" : "/signup"}
                   className="inline-flex items-center gap-2 rounded-md bg-gradient-to-r from-orange-600 to-red-600 text-white font-bold px-6 py-3 hover:scale-105 transition-transform shadow-[0_0_20px_rgba(239,68,68,0.4)]">
-              Ignite a test
+              {user ? "Enter Dashboard" : "Ignite a test"}
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="h-4 w-4">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
               </svg>
