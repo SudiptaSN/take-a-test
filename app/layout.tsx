@@ -2,13 +2,13 @@ import "./globals.css";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "AssOnFire 🔥 | Hardcore Proctored Tests",
-  description: "Create and proctor tests on AssOnFire.",
+  title: { template: '%s | AssOnFire 🔥', default: 'AssOnFire 🔥 | Hardcore Proctored Tests' },
+  description: 'The definitive proctored examination platform.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <body>{children}</body>
     </html>
   );

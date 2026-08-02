@@ -2,7 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import AiSettingsForm from "@/components/AiSettingsForm";
-
+import Navbar from "@/components/Navbar";
 export default async function Dashboard() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -23,26 +23,60 @@ export default async function Dashboard() {
 
   const attemptByTest = new Map((attempts || []).map((a) => [a.test_id, a]));
 
+  const completedAttempts = attempts?.filter((a) => a.status === "submitted") || [];
+  const completedCount = completedAttempts.length;
+  const avgScore = completedCount > 0 ? Math.round(completedAttempts.reduce((acc, a) => acc + (a.score || 0), 0) / completedCount) : 0;
+  const bestScore = completedCount > 0 ? Math.max(...completedAttempts.map(a => a.score || 0)) : 0;
+
   return (
-    <main className="max-w-4xl mx-auto px-6 py-10">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-bold">Candidate Dashboard</h1>
-        <form action="/auth/signout" method="post"><button className="btn-secondary">Sign out</button></form>
-      </div>
+    <>
+      <Navbar />
+      <main className="max-w-4xl mx-auto px-6 py-10">
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-2xl font-bold">Candidate Dashboard</h1>
+        </div>
       
       <AiSettingsForm initialKey={profile?.gemini_key} initialShared={profile?.gemini_key_shared || false} />
 
+      {completedCount > 0 && (
+        <div className="grid grid-cols-3 gap-4 mb-8">
+          <div className="card text-center">
+            <div className="text-2xl font-bold text-orange-400">{completedCount}</div>
+            <div className="text-xs text-zinc-400 mt-1">Tests Taken</div>
+          </div>
+          <div className="card text-center">
+            <div className="text-2xl font-bold text-orange-400">{avgScore}</div>
+            <div className="text-xs text-zinc-400 mt-1">Avg Score</div>
+          </div>
+          <div className="card text-center">
+            <div className="text-2xl font-bold text-orange-400">{bestScore}</div>
+            <div className="text-xs text-zinc-400 mt-1">Best Score</div>
+          </div>
+        </div>
+      )}
+
       <h2 className="text-xl font-bold">Available tests</h2>
       <div className="mt-6 space-y-3">
-        {(tests || []).length === 0 && <p className="text-zinc-600">No published tests yet.</p>}
+        {(tests || []).length === 0 && (
+          <div className="card text-center py-12">
+            <div className="text-4xl mb-3">📋</div>
+            <p className="text-zinc-400 font-medium">No tests available yet</p>
+            <p className="text-sm text-zinc-500 mt-1">Your administrator hasn't published any tests, or you haven't been invited.</p>
+          </div>
+        )}
         {(tests || []).map((t) => {
           const a = attemptByTest.get(t.id);
           return (
             <div key={t.id} className="card flex items-center justify-between">
               <div>
                 <div className="font-semibold">{t.title}</div>
-                <div className="text-sm text-zinc-600">{t.description}</div>
-                <div className="text-xs text-zinc-500 mt-1">Duration: {t.duration_minutes} min</div>
+                <div className="text-sm text-zinc-400">{t.description}</div>
+                <div className="text-xs text-zinc-500 mt-1 flex items-center gap-2">
+                  <span>Duration: {t.duration_minutes} min</span>
+                  {a?.status === 'submitted' && <span className='text-xs px-2 py-0.5 rounded-full bg-green-500/10 text-green-400 border border-green-500/20'>✓ Completed</span>}
+                  {a?.status === 'in_progress' && <span className='text-xs px-2 py-0.5 rounded-full bg-yellow-500/10 text-yellow-400 border border-yellow-500/20'>⏳ In Progress</span>}
+                  {a?.status === 'terminated' && <span className='text-xs px-2 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/20'>✗ Terminated</span>}
+                </div>
               </div>
               <div>
                 {a?.status === "submitted" || a?.status === "terminated" ? (
@@ -55,6 +89,7 @@ export default async function Dashboard() {
           );
         })}
       </div>
-    </main>
+      </main>
+    </>
   );
 }

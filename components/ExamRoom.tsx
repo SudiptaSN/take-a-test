@@ -188,12 +188,18 @@ export default function ExamRoom({ test, questions, attempt }: { test: any; ques
   const ss = String(remaining % 60).padStart(2, "0");
 
   return (
-    <div ref={containerRef} className="min-h-screen bg-zinc-950 select-none" onCopy={(e) => e.preventDefault()} onPaste={(e) => e.preventDefault()} onContextMenu={(e) => e.preventDefault()}>
+    <div ref={containerRef} className="min-h-screen bg-zinc-950" onCopy={(e) => e.preventDefault()} onContextMenu={(e) => e.preventDefault()}>
       {banner && <div className="bg-red-600 text-white text-center py-2 text-sm">{banner}</div>}
       <header className="flex items-center justify-between p-4 border-b border-zinc-800 bg-zinc-900">
-        <div className="text-zinc-200"><b>{test.title}</b> <span className="text-zinc-500 text-sm">· Q{idx + 1}/{shuffledQuestions.length}</span></div>
-        <div className="flex items-center gap-4">
-          <video ref={videoRef} className="w-24 h-16 bg-black rounded" muted playsInline />
+        <div className="text-zinc-200 select-none">
+          <b>{test.title}</b> <span className="text-zinc-500 text-sm">· Q{idx + 1}/{shuffledQuestions.length}</span>
+          {test.is_hardcore_mode && <span className="ml-2 text-[10px] font-bold uppercase tracking-wider text-red-400 border border-red-500/30 px-1.5 py-0.5 rounded bg-red-500/10 animate-pulse">🔒 HARDCORE</span>}
+        </div>
+        <div className="flex items-center gap-4 select-none">
+          <div className="relative">
+            <video ref={videoRef} className="w-24 h-16 bg-black rounded" muted playsInline />
+            <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-500 animate-pulse" title="Recording" />
+          </div>
           <div className="font-mono text-lg">{mm}:{ss}</div>
           <button className="btn" onClick={() => submit(false)}>Submit</button>
         </div>
@@ -207,9 +213,9 @@ export default function ExamRoom({ test, questions, attempt }: { test: any; ques
                 <h3 className="text-xl font-bold text-orange-500 uppercase tracking-wider">{q.section_title}</h3>
               </div>
             )}
-            <div className="text-sm text-zinc-500">{q.type} · {q.points} pts</div>
-            <h2 className="text-lg font-semibold mt-1 whitespace-pre-wrap">{q.prompt}</h2>
-            {q.image_url && <img src={q.image_url} alt="" className="mt-3 max-h-80 rounded border" onContextMenu={(e) => e.preventDefault()} draggable={false} />}
+            <div className="text-sm text-zinc-400 select-none">{q.type} · {q.points} pts</div>
+            <h2 className="text-lg font-semibold mt-1 whitespace-pre-wrap select-none">{q.prompt}</h2>
+            {q.image_url && <img src={q.image_url} alt="" className="mt-3 max-h-80 rounded border select-none" onContextMenu={(e) => e.preventDefault()} draggable={false} />}
             <div className="mt-4 space-y-2">
               {q.type === "long_text" && (
                 <textarea
@@ -243,11 +249,11 @@ export default function ExamRoom({ test, questions, attempt }: { test: any; ques
                 );
               })}
             </div>
-            <div className="mt-6 flex justify-between">
+            <div className="mt-6 flex justify-between select-none">
               {!test.is_hardcore_mode ? (
                 <button className="btn-secondary" disabled={idx === 0} onClick={() => setIdx((i) => i - 1)}>← Previous</button>
               ) : (
-                <div /> // Placeholder to keep Next button on the right
+                <div className="text-xs text-red-400/60 flex items-center gap-1"><span>🔒</span> No going back</div>
               )}
               {idx < shuffledQuestions.length - 1 ? (
                 <button className="btn" onClick={() => setIdx((i) => i + 1)}>Next →</button>

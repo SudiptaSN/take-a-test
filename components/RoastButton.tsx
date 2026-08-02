@@ -28,7 +28,7 @@ export default function RoastButton({ attemptId }: { attemptId: string }) {
     return (
       <div className="mt-8 p-6 text-left border border-red-500/30 bg-red-950/20 rounded-xl shadow-[0_0_30px_rgba(220,38,38,0.1)]">
         <h3 className="text-xl font-bold text-red-500 mb-4 uppercase tracking-wider">🔥 AI Roast Results</h3>
-        <div className="text-zinc-300 whitespace-pre-wrap leading-relaxed text-sm font-mono">
+        <div className="text-zinc-300 whitespace-pre-wrap leading-relaxed text-sm ">
           {roast}
         </div>
       </div>

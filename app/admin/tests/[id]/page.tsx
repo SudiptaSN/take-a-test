@@ -2,6 +2,9 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import Breadcrumbs from '@/components/Breadcrumbs';
+import { ConfirmModal } from '@/components/ConfirmModal';
+import DateTimePicker from '@/components/DateTimePicker';
 
 type QType = "mcq_single" | "mcq_multi" | "long_text";
 type Option = { id: string; text: string; image_url?: string | null };
@@ -39,6 +42,7 @@ export default function EditTest() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [saving, setSaving] = useState(false);
   const [link, setLink] = useState("");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -160,23 +164,33 @@ export default function EditTest() {
 
   return (
     <main className="max-w-3xl mx-auto px-6 py-10">
-      <a href="/admin" className="text-sm text-zinc-600">← Back</a>
+      <Breadcrumbs items={[{ label: 'Admin', href: '/admin' }, { label: test?.title || 'Test' }]} />
       <div className="flex items-center justify-between mt-2">
         <h1 className="text-2xl font-bold">Edit test</h1>
         <button
           className="text-sm text-red-600 underline"
-          onClick={async () => {
-            if (!confirm(`Delete "${test.title}"?\n\nThis will permanently delete the test, all candidate attempts, answers, proctor events, invites, AND all associated images from storage (question images and webcam snapshots).\n\nThis cannot be undone.`)) return;
-            const res = await fetch(`/api/admin/tests/${id}`, { method: "DELETE" });
-            if (res.ok) {
-              window.location.href = "/admin";
-            } else {
-              const data = await res.json();
-              alert(data.error || "Failed to delete test.");
-            }
-          }}
+          onClick={() => setShowDeleteModal(true)}
         >Delete test</button>
       </div>
+
+      <ConfirmModal
+        open={showDeleteModal}
+        title="Delete Test"
+        message="This will permanently delete the test, all questions, answers, attempts, snapshots, and images. This action cannot be undone."
+        confirmLabel="Delete Forever"
+        variant="danger"
+        onConfirm={async () => {
+          setShowDeleteModal(false);
+          const res = await fetch(`/api/admin/tests/${id}`, { method: "DELETE" });
+          if (res.ok) {
+            window.location.href = "/admin";
+          } else {
+            const data = await res.json();
+            alert(data.error || "Failed to delete test.");
+          }
+        }}
+        onCancel={() => setShowDeleteModal(false)}
+      />
 
       <div className="card mt-4 space-y-3">
         <input className="input" value={test.title} onChange={(e) => updateTest({ title: e.target.value })} />
@@ -192,14 +206,16 @@ export default function EditTest() {
 
         <div className="grid grid-cols-2 gap-4">
           <label className="block text-sm">Available From (Optional)
-            <input className="input mt-1" type="datetime-local" 
-                   value={test.available_from ? new Date(test.available_from).toISOString().slice(0,16) : ""} 
-                   onChange={(e) => updateTest({ available_from: e.target.value ? new Date(e.target.value).toISOString() : null })} />
+            <DateTimePicker 
+              value={test.available_from ? new Date(test.available_from).toISOString() : ""} 
+              onChange={(v) => updateTest({ available_from: v ? new Date(v).toISOString() : null })} 
+            />
           </label>
           <label className="block text-sm">Available Until (Optional)
-            <input className="input mt-1" type="datetime-local" 
-                   value={test.available_until ? new Date(test.available_until).toISOString().slice(0,16) : ""} 
-                   onChange={(e) => updateTest({ available_until: e.target.value ? new Date(e.target.value).toISOString() : null })} />
+            <DateTimePicker 
+              value={test.available_until ? new Date(test.available_until).toISOString() : ""} 
+              onChange={(v) => updateTest({ available_until: v ? new Date(v).toISOString() : null })} 
+            />
           </label>
         </div>
 
@@ -303,7 +319,7 @@ export default function EditTest() {
         <button className="btn-secondary" onClick={() => addQuestion("mcq_multi")}>+ MCQ (multi)</button>
         <button className="btn-secondary" onClick={() => addQuestion("long_text")}>+ Long answer</button>
         <div className="w-px h-6 bg-zinc-300 mx-2"></div>
-        <label className="btn-secondary cursor-pointer bg-red-50 border-red-200 text-red-700 hover:bg-red-100">
+        <label className="btn-secondary cursor-pointer bg-red-900/20 border-red-800/50 text-red-400 hover:bg-red-900/40">
           Upload CSV
           <input type="file" accept=".csv" className="hidden" onChange={importCSV} />
         </label>

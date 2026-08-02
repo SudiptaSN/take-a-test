@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import DateTimePicker from '@/components/DateTimePicker';
 
 export default function LandingPageSettingsForm({ initialTitle, initialDate }: { initialTitle: string | null, initialDate: string | null }) {
   const [title, setTitle] = useState(initialTitle || "WBCHSE SEMESTER 1: OPERATION ASS ON FIRE");
-  const [date, setDate] = useState(initialDate ? new Date(initialDate).toISOString().slice(0, 16) : "");
+  const [date, setDate] = useState(initialDate ? new Date(initialDate).toISOString() : "");
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState("");
 
@@ -45,11 +46,9 @@ export default function LandingPageSettingsForm({ initialTitle, initialDate }: {
         </div>
         <div>
           <label className="block text-xs font-semibold text-zinc-300 mb-1">Target Date & Time</label>
-          <input
-            type="datetime-local"
+          <DateTimePicker
             value={date}
-            onChange={(e) => setDate(e.target.value)}
-            className="input text-sm"
+            onChange={(v) => setDate(v)}
           />
         </div>
         <div className="flex items-center gap-4 mt-2">

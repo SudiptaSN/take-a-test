@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import { genCode } from "@/lib/code";
 
 type Invite = {
@@ -92,7 +93,7 @@ Good luck.`);
 
   return (
     <main className="max-w-4xl mx-auto px-6 py-10">
-      <a href={`/admin/tests/${id}`} className="text-sm text-zinc-600">← Back to test</a>
+      <Breadcrumbs items={[{ label: 'Admin', href: '/admin' }, { label: 'Test', href: `/admin/tests/${id}` }, { label: 'Invites' }]} />
       <h1 className="text-2xl font-bold mt-2">Invites · {test?.title}</h1>
 
       <div className="card mt-6">
@@ -123,6 +124,7 @@ Good luck.`);
         )}
       </div>
 
+      <div className="overflow-x-auto">
       <table className="mt-3 w-full text-sm">
         <thead className="text-left text-zinc-500">
           <tr><th className="py-2">Email</th><th>Code</th><th>Status</th><th></th></tr>
@@ -132,15 +134,16 @@ Good luck.`);
             <tr key={i.id} className="border-t">
               <td className="py-2">{i.email}</td>
               <td><code className="font-mono">{i.code}</code></td>
-              <td>{i.used_at ? <span className="text-green-700">used {new Date(i.used_at).toLocaleString()}</span> : <span className="text-zinc-500">pending</span>}</td>
+              <td>{i.used_at ? <span className="text-green-400">used {new Date(i.used_at).toLocaleString()}</span> : <span className="text-zinc-500">pending</span>}</td>
               <td className="text-right">
-                <a href={mailtoLink(i)} className="text-red-700 underline mr-3">email</a>
+                <a href={mailtoLink(i)} className="text-red-400 underline mr-3">email</a>
                 <button className="text-red-600" onClick={() => remove(i.id)}>delete</button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+      </div>
     </main>
   );
 }

@@ -67,7 +67,11 @@ export default async function Leaderboard({ params }: { params: Promise<{ id: st
 
       <div className="card space-y-4 !p-4">
         {sorted.length === 0 ? (
-          <p className="p-6 text-center text-zinc-500">No attempts have been graded yet.</p>
+          <div className="p-12 text-center text-zinc-500 bg-zinc-900/50 rounded-lg border border-dashed border-zinc-800">
+            <div className="text-4xl mb-4">🏆</div>
+            <p className="text-lg font-medium text-zinc-400">No one has conquered this yet.</p>
+            <p className="text-sm mt-1">Be the first to get on the Wall of Flame!</p>
+          </div>
         ) : (
           sorted.map((att: any, idx: number) => {
             const durMs = new Date(att.submitted_at).getTime() - new Date(att.started_at).getTime();
@@ -85,7 +89,7 @@ export default async function Leaderboard({ params }: { params: Promise<{ id: st
               <div key={att.id} className="p-4 rounded-lg bg-zinc-900 border border-zinc-800">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="text-2xl font-bold text-zinc-600 w-8 text-right">
+                    <div className="text-2xl font-bold text-zinc-400 w-8 text-right">
                       {idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : `#${idx + 1}`}
                     </div>
                     <div className="font-semibold text-lg text-zinc-200">
@@ -103,7 +107,7 @@ export default async function Leaderboard({ params }: { params: Promise<{ id: st
                     <p className="text-xs text-zinc-500 uppercase tracking-widest mb-2">Webcam Proof (Peer Review)</p>
                     <div className="flex gap-2 overflow-x-auto pb-2">
                       {attemptSnapshots.map((url, i) => (
-                        <img key={i} src={url} alt="Proctor Snapshot" className="h-20 w-auto rounded border border-zinc-700/50 hover:scale-150 transition-transform origin-left" />
+                        <img key={i} src={url} alt="Proctor Snapshot" className="h-20 w-auto rounded border border-zinc-700/50 hover:scale-110 relative z-10 transition-transform origin-left" />
                       ))}
                     </div>
                   </div>

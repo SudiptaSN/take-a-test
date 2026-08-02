@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient as createSupabaseJs } from "@supabase/supabase-js";
 import CountdownTimer from "@/components/CountdownTimer";
 import { createClient } from "@/lib/supabase/server";
+import Navbar from "@/components/Navbar";
 
 export const dynamic = "force-dynamic";
 
@@ -68,30 +69,7 @@ export default async function Home() {
       <div className="fixed inset-0 pointer-events-none bg-grid opacity-30"></div>
       <div className="fixed inset-0 pointer-events-none bg-radial-glow opacity-60"></div>
 
-      {/* Nav */}
-      <header className="sticky top-0 z-30 backdrop-blur supports-[backdrop-filter]:bg-zinc-950/60 border-b border-white/5">
-        <nav className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 font-bold tracking-tight text-xl">
-            <span>🔥</span>
-            <span className="bg-gradient-to-r from-orange-400 to-red-600 bg-clip-text text-transparent">AssOnFire</span>
-            <span className="ml-1.5 text-[10px] font-bold uppercase tracking-wider text-red-400 border border-red-500/30 px-1.5 py-0.5 rounded bg-red-500/10">UR-COOKED</span>
-          </Link>
-          <div className="flex items-center gap-1 text-sm">
-            {user ? (
-              <Link href="/dashboard" className="px-3 py-1.5 rounded-md bg-white text-zinc-900 font-medium hover:bg-zinc-200 transition">
-                Go to Dashboard
-              </Link>
-            ) : (
-              <>
-                <Link href="/login" className="px-3 py-1.5 rounded-md hover:bg-white/5 text-zinc-300 hover:text-white transition">Sign in</Link>
-                <Link href="/signup" className="ml-2 px-3 py-1.5 rounded-md bg-white text-zinc-900 font-medium hover:bg-zinc-200 transition">
-                  Get started
-                </Link>
-              </>
-            )}
-          </div>
-        </nav>
-      </header>
+      <Navbar />
 
       {/* Hero */}
       <main className="max-w-6xl mx-auto px-6">

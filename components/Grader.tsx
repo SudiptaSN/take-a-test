@@ -37,13 +37,13 @@ export default function Grader({
     <div className="card">
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1">
-          <div className="text-xs text-slate-500">{question.type} · max {question.points} pts</div>
+          <div className="text-xs text-zinc-400">{question.type} · max {question.points} pts</div>
           <div className="font-medium mt-1 whitespace-pre-wrap">{question.prompt}</div>
           {question.image_url && <img src={question.image_url} alt="" className="mt-2 max-h-40 rounded border" />}
         </div>
       </div>
-      <div className="mt-3 text-sm text-slate-700 bg-slate-50 border rounded p-3 whitespace-pre-wrap font-mono">
-        {response?.text || <span className="text-slate-400">(no response)</span>}
+      <div className="mt-3 text-sm text-zinc-200 bg-zinc-800/50 border border-zinc-700 rounded p-3 whitespace-pre-wrap">
+        {response?.text || <span className="text-zinc-500 italic">(no response)</span>}
       </div>
       <div className="mt-3 flex items-center gap-2 flex-wrap">
         <label className="text-sm">Score
@@ -52,7 +52,7 @@ export default function Grader({
         </label>
         <input className="input flex-1 min-w-[200px]" placeholder="Feedback (optional)" value={feedback} onChange={(e) => setFeedback(e.target.value)} />
         <button className="btn" onClick={save} disabled={saving}>{saving ? "Saving…" : "Save grade"}</button>
-        {savedAt && <span className="text-xs text-green-700">saved at {savedAt}</span>}
+        {savedAt && <span className="text-xs text-green-400">saved at {savedAt}</span>}
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Grader from "@/components/Grader";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 export default async function AttemptDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -36,9 +37,9 @@ export default async function AttemptDetail({ params }: { params: Promise<{ id: 
 
   return (
     <main className="max-w-4xl mx-auto px-6 py-10">
-      <a href="/admin" className="text-sm text-zinc-600">← Back</a>
+      <Breadcrumbs items={[{ label: 'Admin', href: '/admin' }, { label: a?.test?.title || 'Test', href: `/admin/tests/${a?.test_id}` }, { label: 'Attempts', href: `/admin/tests/${a?.test_id}/attempts` }, { label: 'Review' }]} />
       <h1 className="text-2xl font-bold mt-2">Attempt · {a?.test?.title}</h1>
-      <p className="text-zinc-600">{a?.candidate?.full_name} · {a?.candidate?.email} · {a?.status} · <b>total score: {a?.score ?? "-"}</b></p>
+      <p className="text-zinc-400">{a?.candidate?.full_name} · {a?.candidate?.email} · {a?.status} · <b>total score: {a?.score ?? "-"}</b></p>
 
       {longAnswers.length > 0 && (
         <>
@@ -90,7 +91,17 @@ export default async function AttemptDetail({ params }: { params: Promise<{ id: 
         {(events || []).map((e) => (
           <li key={e.id} className="border-b last:border-0 py-1">
             <code className="text-zinc-500">{new Date(e.created_at).toLocaleTimeString()}</code> · <b className={e.kind.includes("blocked") || e.kind.includes("exit") || e.kind === "terminated" ? "text-red-600" : ""}>{e.kind}</b>
-            {e.detail ? <span className="text-zinc-500"> {JSON.stringify(e.detail)}</span> : null}
+            {e.detail ? (
+              e.detail && typeof e.detail === 'object' ? (
+                <span className="text-zinc-400 ml-2">
+                  {Object.entries(e.detail).map(([k, v]) => (
+                    <span key={k} className="mr-3"><span className="text-zinc-500">{k}:</span> {String(v)}</span>
+                  ))}
+                </span>
+              ) : (
+                <span className="text-zinc-400 ml-2">{String(e.detail)}</span>
+              )
+            ) : null}
           </li>
         ))}
       </ul>

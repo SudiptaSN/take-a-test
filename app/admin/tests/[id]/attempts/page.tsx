@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 export default async function Attempts({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -15,12 +16,21 @@ export default async function Attempts({ params }: { params: Promise<{ id: strin
     .eq("test_id", id)
     .order("started_at", { ascending: false });
 
+  const { data: test } = await supabase.from("tests").select("title").eq("id", id).single();
+
   return (
     <main className="max-w-4xl mx-auto px-6 py-10">
-      <a href="/admin" className="text-sm text-zinc-600">← Back</a>
+      <Breadcrumbs items={[{ label: 'Admin', href: '/admin' }, { label: test?.title || 'Test', href: `/admin/tests/${id}` }, { label: 'Attempts' }]} />
       <h1 className="text-2xl font-bold mt-2">Attempts</h1>
+      {(!attempts || attempts.length === 0) ? (
+        <div className="card text-center py-12 mt-6">
+          <div className="text-4xl mb-3">📝</div>
+          <p className="text-zinc-400 font-medium">No attempts yet</p>
+          <p className="text-sm text-zinc-500 mt-1">Candidates haven't started this test.</p>
+        </div>
+      ) : (
       <table className="mt-6 w-full text-sm">
-        <thead className="text-left text-zinc-500">
+        <thead className="text-left text-zinc-400">
           <tr><th className="py-2">Candidate</th><th>Status</th><th>Score</th><th>Started</th><th>Submitted</th><th></th></tr>
         </thead>
         <tbody>
@@ -36,6 +46,7 @@ export default async function Attempts({ params }: { params: Promise<{ id: strin
           ))}
         </tbody>
       </table>
+      )}
     </main>
   );
 }

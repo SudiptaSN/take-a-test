@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import Navbar from "@/components/Navbar";
 import DeleteTestButton from "@/components/DeleteTestButton";
 import AiSettingsForm from "@/components/AiSettingsForm";
 import DiscordSettingsForm from "@/components/DiscordSettingsForm";
@@ -11,29 +12,24 @@ export default async function AdminHome() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  console.log("--- DEBUG 1: User ID ---", user?.id);
-
   if (!user) redirect("/login");
 
   const { data: profile, error } = await supabase.from("profiles").select("role, gemini_key, gemini_key_shared, discord_webhook_url, discord_hall_of_fame_url, sprint_target_date, sprint_title").eq("id", user.id).single();
 
-  console.log("--- DEBUG 2: Profile DB Result ---", profile);
-  console.log("--- DEBUG 3: DB Error? ---", error);
-
   if (profile?.role !== "admin") {
-    console.log("--- DEBUG 4: Bouncing user! Role found was:", profile?.role);
     redirect("/dashboard");
   }
 
   const { data: tests } = await supabase.from("tests").select("*").order("created_at", { ascending: false });
 
   return (
+    <>
+    <Navbar />
     <main className="max-w-5xl mx-auto px-6 py-10">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Admin · Tests</h1>
         <div className="flex gap-2">
           <Link href="/admin/new" className="btn">New test</Link>
-          <form action="/auth/signout" method="post"><button className="btn-secondary">Sign out</button></form>
         </div>
       </div>
 
@@ -47,14 +43,21 @@ export default async function AdminHome() {
       </div>
 
       <div className="mt-6 space-y-3">
-        {(tests || []).length === 0 && <p className="text-zinc-600">No tests yet.</p>}
+        {(!tests || tests.length === 0) && (
+          <div className="card text-center py-12">
+            <div className="text-4xl mb-3">🔥</div>
+            <p className="text-zinc-400 font-medium">No tests created yet</p>
+            <p className="text-sm text-zinc-500 mt-1">Create your first exam to get started.</p>
+            <Link href="/admin/new" className="btn mt-4 inline-flex">Create test</Link>
+          </div>
+        )}
         {(tests || []).map((t) => (
           <div key={t.id} className="card flex items-center justify-between">
             <div>
               <div className="font-semibold">{t.title} {t.is_published ? <span className="text-xs text-green-700 ml-2">published</span> : <span className="text-xs text-zinc-500 ml-2">draft</span>}</div>
-              <div className="text-sm text-zinc-600">{t.description}</div>
+              <div className="text-sm text-zinc-400">{t.description}</div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <PingDiscordButton test={t} webhookUrl={profile?.discord_webhook_url} />
               <Link href={`/admin/tests/${t.id}`} className="btn-secondary">Edit</Link>
               <Link href={`/admin/tests/${t.id}/invites`} className="btn-secondary">Invites</Link>
@@ -65,5 +68,6 @@ export default async function AdminHome() {
         ))}
       </div>
     </main>
+    </>
   );
 }
