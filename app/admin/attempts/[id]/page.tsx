@@ -2,6 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Grader from "@/components/Grader";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import LiveMonitor from "@/components/LiveMonitor";
+import DisqualifyButton from "@/components/DisqualifyButton";
 
 export default async function AttemptDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -38,8 +40,13 @@ export default async function AttemptDetail({ params }: { params: Promise<{ id: 
   return (
     <main className="max-w-4xl mx-auto px-6 py-10">
       <Breadcrumbs items={[{ label: 'Admin', href: '/admin' }, { label: a?.test?.title || 'Test', href: `/admin/tests/${a?.test_id}` }, { label: 'Attempts', href: `/admin/tests/${a?.test_id}/attempts` }, { label: 'Review' }]} />
-      <h1 className="text-2xl font-bold mt-2">Attempt · {a?.test?.title}</h1>
-      <p className="text-zinc-400">{a?.candidate?.full_name} · {a?.candidate?.email} · {a?.status} · <b>total score: {a?.score ?? "-"}</b></p>
+      <div className="flex items-start justify-between mt-2">
+        <div>
+          <h1 className="text-2xl font-bold">Attempt · {a?.test?.title}</h1>
+          <p className="text-zinc-400 mt-1">{a?.candidate?.full_name} · {a?.candidate?.email} · {a?.status} · <b>total score: {a?.score ?? "-"}</b></p>
+        </div>
+        <DisqualifyButton attemptId={id} initialStatus={a?.status} />
+      </div>
 
       {longAnswers.length > 0 && (
         <>
@@ -86,25 +93,7 @@ export default async function AttemptDetail({ params }: { params: Promise<{ id: 
         </>
       )}
 
-      <h2 className="font-semibold mt-8">Proctor events ({events?.length || 0})</h2>
-      <ul className="mt-2 text-sm max-h-72 overflow-y-auto border border-zinc-800 rounded p-2 bg-zinc-900/50">
-        {(events || []).map((e) => (
-          <li key={e.id} className="border-b last:border-0 py-1">
-            <code className="text-zinc-500">{new Date(e.created_at).toLocaleTimeString()}</code> · <b className={e.kind.includes("blocked") || e.kind.includes("exit") || e.kind === "terminated" ? "text-red-600" : ""}>{e.kind}</b>
-            {e.detail ? (
-              e.detail && typeof e.detail === 'object' ? (
-                <span className="text-zinc-400 ml-2">
-                  {Object.entries(e.detail).map(([k, v]) => (
-                    <span key={k} className="mr-3"><span className="text-zinc-500">{k}:</span> {String(v)}</span>
-                  ))}
-                </span>
-              ) : (
-                <span className="text-zinc-400 ml-2">{String(e.detail)}</span>
-              )
-            ) : null}
-          </li>
-        ))}
-      </ul>
+      <LiveMonitor attemptId={id} initialEvents={events || []} />
     </main>
   );
 }

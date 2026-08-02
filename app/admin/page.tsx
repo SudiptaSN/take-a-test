@@ -33,11 +33,11 @@ export default async function AdminHome() {
         </div>
       </div>
 
-      <div className="my-6">
+      <div className="my-6 relative z-50">
         <LandingPageSettingsForm initialTitle={profile?.sprint_title} initialDate={profile?.sprint_target_date} />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-10">
         <AiSettingsForm initialKey={profile?.gemini_key} initialShared={profile?.gemini_key_shared || false} />
         <DiscordSettingsForm initialUrl={profile?.discord_webhook_url} initialHofUrl={profile?.discord_hall_of_fame_url} />
       </div>

@@ -14,13 +14,60 @@ export default function ExamRoom({ test, questions, attempt }: { test: any; ques
   const containerRef = useRef<HTMLDivElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const [phase, setPhase] = useState<"prep" | "active" | "submitted">("prep");
+  const [phase, setPhase] = useState<"prep" | "onboarding" | "active" | "submitted">("prep");
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [violations, setViolations] = useState(0);
   const [banner, setBanner] = useState<string | null>(null);
   const [idx, setIdx] = useState(0);
   const [now, setNow] = useState<number>(Date.now());
+  const [isFullscreen, setIsFullscreen] = useState(true);
   const endAt = useRef<number>(new Date(attempt.started_at).getTime() + test.duration_minutes * 60_000);
+
+  // AI Refs
+  const cocoModelRef = useRef<any>(null);
+  const faceapiRef = useRef<any>(null);
+  const referenceDescriptorRef = useRef<Float32Array | null>(null);
+  const [modelsLoaded, setModelsLoaded] = useState(false);
+
+  // Load ML Models
+  useEffect(() => {
+    let active = true;
+    const initModels = async () => {
+      try {
+        const tf = await import("@tensorflow/tfjs");
+        await import("@tensorflow/tfjs-backend-webgl");
+        await tf.ready();
+        const faceapi = await import("@vladmandic/face-api");
+        const cocoSsd = await import("@tensorflow-models/coco-ssd");
+
+        // Load models directly from CDN
+        await faceapi.nets.ssdMobilenetv1.loadFromUri('https://vladmandic.github.io/face-api/model/');
+        await faceapi.nets.faceLandmark68Net.loadFromUri('https://vladmandic.github.io/face-api/model/');
+        await faceapi.nets.faceRecognitionNet.loadFromUri('https://vladmandic.github.io/face-api/model/');
+        
+        const objDetector = await cocoSsd.load();
+        
+        if (active) {
+           cocoModelRef.current = objDetector;
+           faceapiRef.current = faceapi;
+           setModelsLoaded(true);
+        }
+      } catch (err) {
+        console.error("AI Models failed to load", err);
+        setBanner("Failed to initialize AI Proctoring engine. Please check your connection.");
+      }
+    };
+    initModels();
+    return () => { active = false; };
+  }, []);
+
+  // Ensure Video Stream re-attaches if component unmounts/remounts between phases
+  useEffect(() => {
+    if (videoRef.current && streamRef.current && videoRef.current.srcObject !== streamRef.current) {
+      videoRef.current.srcObject = streamRef.current;
+      videoRef.current.play().catch(() => {});
+    }
+  }, [phase]);
 
   // Shuffle MCQ options once on mount so they stay stable during the test
   const shuffledQuestions = useMemo(() => {
@@ -81,8 +128,42 @@ export default function ExamRoom({ test, questions, attempt }: { test: any; ques
     }
     try { await containerRef.current?.requestFullscreen(); }
     catch { setBanner("Fullscreen is required."); return; }
-    setPhase("active");
-    logEvent("exam_started");
+    
+    setPhase("onboarding");
+  };
+
+  const captureIdentity = async () => {
+    const v = videoRef.current;
+    if (!v || !faceapiRef.current) return;
+    
+    setBanner("Analyzing face... Please stay still.");
+    try {
+      const detections = await faceapiRef.current.detectSingleFace(v).withFaceLandmarks().withFaceDescriptor();
+      if (!detections) {
+        setBanner("No face detected. Please ensure your face is clearly visible and centered.");
+        return;
+      }
+      
+      const descriptorArray = Array.from(detections.descriptor);
+      await logEvent("reference_face", { descriptor: descriptorArray });
+      referenceDescriptorRef.current = detections.descriptor;
+      
+      // Upload reference snapshot
+      const canvas = document.createElement("canvas");
+      canvas.width = v.videoWidth || 320; canvas.height = v.videoHeight || 240;
+      canvas.getContext("2d")?.drawImage(v, 0, 0);
+      const blob = await new Promise<Blob | null>((res) => canvas.toBlob(res, "image/jpeg", 0.8));
+      if (blob) {
+        await supabase.storage.from("snapshots").upload(`${attempt.id}/reference.jpg`, blob, { contentType: "image/jpeg" });
+      }
+      
+      setBanner(null);
+      setPhase("active");
+      logEvent("exam_started");
+    } catch (e) {
+      console.error(e);
+      setBanner("Error capturing identity. Please try again.");
+    }
   };
 
   // Wire proctoring listeners
@@ -90,7 +171,12 @@ export default function ExamRoom({ test, questions, attempt }: { test: any; ques
     if (phase !== "active") return;
 
     const onFsChange = () => {
-      if (!document.fullscreenElement) addViolation("fullscreen_exit");
+      if (!document.fullscreenElement) {
+        addViolation("fullscreen_exit");
+        setIsFullscreen(false);
+      } else {
+        setIsFullscreen(true);
+      }
     };
     const onVis = () => { if (document.hidden) addViolation("tab_blur"); };
     const onBlur = () => addViolation("window_blur");
@@ -127,7 +213,20 @@ export default function ExamRoom({ test, questions, attempt }: { test: any; ques
     };
   }, [phase, addViolation]);
 
-  // Webcam liveness check + periodic snapshots
+  // Listen for admin immediate disqualification
+  useEffect(() => {
+    if (phase !== "active") return;
+    const sub = supabase.channel(`attempt_${attempt.id}`)
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "attempts", filter: `id=eq.${attempt.id}` }, (payload) => {
+        if (payload.new.status === "terminated") {
+          submit(true); // Terminate locally
+        }
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(sub); };
+  }, [phase, attempt.id, submit, supabase]);
+
+  // Webcam liveness check + AI inference + periodic snapshots
   useEffect(() => {
     if (phase !== "active") return;
     const i = setInterval(async () => {
@@ -138,6 +237,43 @@ export default function ExamRoom({ test, questions, attempt }: { test: any; ques
       canvas.width = v.videoWidth || 320; canvas.height = v.videoHeight || 240;
       const ctx = canvas.getContext("2d"); if (!ctx) return;
       ctx.drawImage(v, 0, 0, canvas.width, canvas.height);
+      
+      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imgData.data;
+      let rSum = 0, gSum = 0, bSum = 0, count = 0;
+      for (let j = 0; j < data.length; j += 40) {
+        rSum += data[j]; gSum += data[j+1]; bSum += data[j+2]; count++;
+      }
+      const avgLuminance = (0.299 * (rSum / count)) + (0.587 * (gSum / count)) + (0.114 * (bSum / count));
+      if (avgLuminance < 10) addViolation("camera_covered");
+
+      // AI Inference
+      if (faceapiRef.current) {
+         try {
+           const detections = await faceapiRef.current.detectAllFaces(v).withFaceLandmarks().withFaceDescriptors();
+           if (detections.length === 0) {
+              addViolation("no_face_detected");
+           } else if (detections.length > 1) {
+              addViolation("multiple_faces_detected");
+           } else if (referenceDescriptorRef.current) {
+              const dist = faceapiRef.current.euclideanDistance(detections[0].descriptor, referenceDescriptorRef.current);
+              if (dist > 0.55) { 
+                 addViolation("impersonation_detected", { distance: dist.toFixed(3) });
+              }
+           }
+         } catch (e) { console.error("Face-api err", e); }
+      }
+
+      if (cocoModelRef.current) {
+         try {
+           const predictions = await cocoModelRef.current.detect(v);
+           const hasElectronics = predictions.filter((p: any) => p.class === "cell phone" || p.class === "laptop" || p.class === "tv");
+           if (hasElectronics.length > 0) {
+              addViolation("electronics_detected", { objects: hasElectronics.map((p: any) => p.class).join(",") });
+           }
+         } catch (e) { console.error("Coco-ssd err", e); }
+      }
+
       const blob: Blob | null = await new Promise((res) => canvas.toBlob(res, "image/jpeg", 0.6));
       if (!blob) return;
       const path = `${attempt.id}/${Date.now()}.jpg`;
@@ -157,27 +293,44 @@ export default function ExamRoom({ test, questions, attempt }: { test: any; ques
     return () => clearInterval(i);
   }, [phase, submit]);
 
-  if (phase === "prep") {
+  if (phase === "prep" || phase === "onboarding") {
     return (
-      <main className="max-w-2xl mx-auto p-10" ref={containerRef}>
-        <h1 className="text-2xl font-bold">{test.title}</h1>
-        <p className="text-slate-600 mt-2">{test.description}</p>
-        <div className="card mt-6 space-y-2 text-sm border-red-900/50 bg-red-950/20">
-          <p className="text-red-500 font-bold text-base uppercase tracking-wider">⚠️ Strict Proctoring Active</p>
-          <ul className="list-disc pl-5 space-y-2 text-zinc-300 mt-3">
-            <li><b className="text-zinc-100">Absolute Fullscreen Lockdown:</b> Any attempt to exit fullscreen will trigger an immediate violation.</li>
-            <li><b className="text-zinc-100">Continuous Vision Surveillance:</b> Your webcam must remain active. Your environment is constantly monitored for unauthorized devices, extra people, and suspicious eye-movement.</li>
-            <li><b className="text-zinc-100">Environment Integrity:</b> Right-clicking, copying, pasting, and all keyboard shortcuts are strictly prohibited and actively blocked.</li>
-            <li><b className="text-zinc-100">Focus Tracking:</b> Looking away from the window or switching tabs will be instantly flagged.</li>
-            <li><b className="text-red-400">Zero Tolerance:</b> {MAX_VIOLATIONS} violations will result in the immediate and permanent termination of your exam.</li>
-            {test.is_hardcore_mode && (
-              <li className="text-orange-500 font-bold">Hardcore Mode: You cannot return to previous questions. Once you click next, your answer is locked permanently.</li>
-            )}
-            <li><b className="text-zinc-100">Duration:</b> {test.duration_minutes} minutes.</li>
-          </ul>
-        </div>
-        {banner && <p className="text-red-600 text-sm mt-4">{banner}</p>}
-        <button className="btn mt-6" onClick={startExam}>Start exam</button>
+      <main className="max-w-2xl mx-auto p-4 sm:p-10" ref={containerRef}>
+        {phase === "prep" ? (
+           <>
+            <h1 className="text-2xl font-bold">{test.title}</h1>
+            <p className="text-slate-600 mt-2">{test.description}</p>
+            <div className="card mt-6 space-y-2 text-sm border-red-900/50 bg-red-950/20">
+              <p className="text-red-500 font-bold text-base uppercase tracking-wider">⚠️ Strict AI Proctoring Active</p>
+              <ul className="list-disc pl-5 space-y-2 text-zinc-300 mt-3">
+                <li><b className="text-zinc-100">Absolute Fullscreen Lockdown:</b> Any attempt to exit fullscreen will trigger an immediate violation.</li>
+                <li><b className="text-zinc-100">AI Vision Surveillance:</b> Your webcam must remain active. We use AI to detect multiple people, electronic devices (cell phones), and verify your identity in real-time.</li>
+                <li><b className="text-zinc-100">Environment Integrity:</b> Right-clicking, copying, pasting, and all keyboard shortcuts are strictly prohibited and actively blocked.</li>
+                <li><b className="text-zinc-100">Focus Tracking:</b> Looking away from the window or switching tabs will be instantly flagged.</li>
+                <li><b className="text-red-400">Zero Tolerance:</b> {MAX_VIOLATIONS} violations will result in the immediate and permanent termination of your exam.</li>
+                {test.is_hardcore_mode && (
+                  <li className="text-orange-500 font-bold">Hardcore Mode: You cannot return to previous questions. Once you click next, your answer is locked permanently.</li>
+                )}
+                <li><b className="text-zinc-100">Duration:</b> {test.duration_minutes} minutes.</li>
+              </ul>
+            </div>
+            {banner && <p className="text-red-100 text-sm mt-4 bg-red-900/80 p-3 rounded">{banner}</p>}
+            <button className="btn mt-6 w-full py-3" onClick={startExam} disabled={!modelsLoaded}>
+               {modelsLoaded ? "Acknowledge & Continue" : "Loading AI Proctoring Engine..."}
+            </button>
+           </>
+        ) : (
+           <div className="text-center mt-10">
+              <h2 className="text-2xl font-bold mb-4">Identity Verification</h2>
+              <p className="text-zinc-400 mb-6">Please look directly at the camera. This reference photo will be used by our AI to verify your identity throughout the exam.</p>
+              <div className="relative mx-auto w-80 h-60 bg-black rounded-lg overflow-hidden border-2 border-zinc-700 shadow-2xl">
+                <video ref={videoRef} className="w-full h-full object-cover scale-x-[-1]" muted playsInline />
+                <div className="absolute inset-0 border-[3px] border-dashed border-orange-500/50 m-6 rounded-lg pointer-events-none" />
+              </div>
+              {banner && <p className="text-red-400 font-bold mt-6">{banner}</p>}
+              <button className="btn mt-8" onClick={captureIdentity}>Capture & Start Exam</button>
+           </div>
+        )}
       </main>
     );
   }
@@ -190,23 +343,39 @@ export default function ExamRoom({ test, questions, attempt }: { test: any; ques
   return (
     <div ref={containerRef} className="min-h-screen bg-zinc-950" onCopy={(e) => e.preventDefault()} onContextMenu={(e) => e.preventDefault()}>
       {banner && <div className="bg-red-600 text-white text-center py-2 text-sm">{banner}</div>}
-      <header className="flex items-center justify-between p-4 border-b border-zinc-800 bg-zinc-900">
-        <div className="text-zinc-200 select-none">
-          <b>{test.title}</b> <span className="text-zinc-500 text-sm">· Q{idx + 1}/{shuffledQuestions.length}</span>
+      <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border-b border-zinc-800 bg-zinc-900 gap-4">
+        <div className="text-zinc-200 select-none w-full sm:w-auto">
+          <b className="block sm:inline truncate">{test.title}</b> <span className="text-zinc-500 text-sm">· Q{idx + 1}/{shuffledQuestions.length}</span>
           {test.is_hardcore_mode && <span className="ml-2 text-[10px] font-bold uppercase tracking-wider text-red-400 border border-red-500/30 px-1.5 py-0.5 rounded bg-red-500/10 animate-pulse">🔒 HARDCORE</span>}
         </div>
-        <div className="flex items-center gap-4 select-none">
-          <div className="relative">
-            <video ref={videoRef} className="w-24 h-16 bg-black rounded" muted playsInline />
-            <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-500 animate-pulse" title="Recording" />
+        <div className="flex flex-wrap items-center gap-4 select-none w-full sm:w-auto justify-between sm:justify-end">
+          <div className="relative border border-zinc-800 rounded bg-black">
+            <video ref={videoRef} className="w-24 h-16 object-cover scale-x-[-1]" muted playsInline />
+            <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-500 animate-pulse" title="AI Monitored" />
           </div>
-          <div className="font-mono text-lg">{mm}:{ss}</div>
-          <button className="btn" onClick={() => submit(false)}>Submit</button>
+          <div className="flex items-center gap-4">
+            <div className="font-mono text-lg">{mm}:{ss}</div>
+            <button className="btn" onClick={() => submit(false)}>Submit</button>
+          </div>
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto p-6">
-        {q && (
+      <main className="max-w-3xl mx-auto p-4 sm:p-6">
+        {!isFullscreen ? (
+          <div className="card text-center py-16">
+            <h2 className="text-3xl font-bold text-red-500 mb-4">Fullscreen Exited</h2>
+            <p className="text-zinc-300 mb-8 max-w-md mx-auto">You have left fullscreen mode. This is a violation of the exam rules. You must return to fullscreen to continue the exam.</p>
+            <button 
+              className="btn bg-red-600 hover:bg-red-700"
+              onClick={async () => {
+                try { await containerRef.current?.requestFullscreen(); setIsFullscreen(true); }
+                catch { setBanner("Fullscreen is required."); }
+              }}
+            >
+              Return to Fullscreen
+            </button>
+          </div>
+        ) : q && (
           <div className="card">
             {q.section_title && (
               <div className="mb-4 pb-2 border-b border-zinc-800">
@@ -235,10 +404,10 @@ export default function ExamRoom({ test, questions, attempt }: { test: any; ques
                       name={`q-${q.id}`}
                       checked={checked}
                       onChange={(e) => {
-                        let next = sel.slice();
-                        if (q.type === "mcq_single") next = e.target.checked ? [opt.id] : [];
-                        else next = e.target.checked ? [...next, opt.id] : next.filter((x) => x !== opt.id);
-                        saveAnswer(q, { selected: next });
+                         let next = sel.slice();
+                         if (q.type === "mcq_single") next = e.target.checked ? [opt.id] : [];
+                         else next = e.target.checked ? [...next, opt.id] : next.filter((x) => x !== opt.id);
+                         saveAnswer(q, { selected: next });
                       }}
                     />
                     <div className="flex-1">
