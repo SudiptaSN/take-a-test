@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient as createSupabaseJs } from "@supabase/supabase-js";
+import { formatTimeIST } from '@/lib/time';
 
 export async function GET(req: Request) {
   try {
@@ -26,7 +27,7 @@ export async function GET(req: Request) {
         
         // 24 Hour Reminder
         if (testStart <= twentyFourHoursFromNow && testStart > now && !test.reminder_24h_sent) {
-          await sendDiscordPing(admin.discord_webhook_url, test.id, `🚨 **T-MINUS 24 HOURS** 🚨\n\n**${test.title}** opens tomorrow at ${testStart.toLocaleTimeString()}.\nGet off Discord and start studying. No excuses.`);
+          await sendDiscordPing(admin.discord_webhook_url, test.id, `🚨 **T-MINUS 24 HOURS** 🚨\n\n**${test.title}** opens tomorrow at ${formatTimeIST(testStart)}.\nGet off Discord and start studying. No excuses.`);
           await supabase.from("tests").update({ reminder_24h_sent: true }).eq("id", test.id);
         }
         

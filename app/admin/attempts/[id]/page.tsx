@@ -4,6 +4,7 @@ import Grader from "@/components/Grader";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import LiveMonitor from "@/components/LiveMonitor";
 import DisqualifyButton from "@/components/DisqualifyButton";
+import { formatTimeIST } from "@/lib/time";
 
 export default async function AttemptDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -86,7 +87,7 @@ export default async function AttemptDetail({ params }: { params: Promise<{ id: 
             {signedSnapshots.map((s, i) => (
               <a key={i} href={s.url} target="_blank" rel="noreferrer" className="block">
                 <img src={s.url} alt="" className="aspect-square object-cover rounded border" />
-                <div className="text-[10px] text-zinc-500 mt-0.5">{s.ts ? new Date(s.ts).toLocaleTimeString() : ""}</div>
+                <div className="text-[10px] text-zinc-500 mt-0.5">{s.ts ? formatTimeIST(s.ts) : ""}</div>
               </a>
             ))}
           </div>

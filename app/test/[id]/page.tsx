@@ -6,6 +6,7 @@ import ExamRoom from "@/components/ExamRoom";
 import { SEB_ENFORCEMENT_ENABLED, verifySebRequest } from "@/lib/seb";
 import UnlockForm from "@/components/UnlockForm";
 import RoastButton from "@/components/RoastButton";
+import { formatIST } from "@/lib/time";
 
 export default async function TakeTest({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -21,7 +22,7 @@ export default async function TakeTest({ params }: { params: Promise<{ id: strin
     return (
       <main className="max-w-xl mx-auto p-10 text-center">
         <h1 className="text-2xl font-bold">Exam not started yet</h1>
-        <p className="mt-2 text-zinc-400">This test will be available starting {new Date(test.available_from).toLocaleString()}.</p>
+        <p className="mt-2 text-zinc-400">This test will be available starting {formatIST(test.available_from)}.</p>
       </main>
     );
   }
@@ -29,7 +30,7 @@ export default async function TakeTest({ params }: { params: Promise<{ id: strin
     return (
       <main className="max-w-xl mx-auto p-10 text-center">
         <h1 className="text-2xl font-bold">Exam has ended</h1>
-        <p className="mt-2 text-zinc-400">This test closed on {new Date(test.available_until).toLocaleString()}.</p>
+        <p className="mt-2 text-zinc-400">This test closed on {formatIST(test.available_until)}.</p>
       </main>
     );
   }

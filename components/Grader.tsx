@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { formatTimeIST } from "@/lib/time";
 
 type Q = { id: string; prompt: string; points: number; type: string; image_url?: string | null };
 
@@ -28,7 +29,7 @@ export default function Grader({
     setSaving(false);
     if (!r.ok) { const j = await r.json().catch(() => ({})); return alert(j.error || "Save failed"); }
     const j = await r.json();
-    setSavedAt(new Date().toLocaleTimeString());
+    setSavedAt(formatTimeIST(new Date()));
     router.refresh();
     void j; // consume
   };

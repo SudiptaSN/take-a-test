@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import { formatIST } from "@/lib/time";
 
 export default async function Attempts({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -39,8 +40,8 @@ export default async function Attempts({ params }: { params: Promise<{ id: strin
               <td className="py-2">{a.candidate?.full_name || a.candidate?.email}</td>
               <td>{a.status}</td>
               <td>{a.score ?? "-"}</td>
-              <td>{a.started_at ? new Date(a.started_at).toLocaleString() : "-"}</td>
-              <td>{a.submitted_at ? new Date(a.submitted_at).toLocaleString() : "-"}</td>
+              <td>{formatIST(a.started_at)}</td>
+              <td>{formatIST(a.submitted_at)}</td>
               <td><a className="underline" href={`/admin/attempts/${a.id}`}>View</a></td>
             </tr>
           ))}

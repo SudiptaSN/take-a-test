@@ -4,6 +4,7 @@ import { useParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { genCode } from "@/lib/code";
+import { formatIST } from "@/lib/time";
 
 type Invite = {
   id: string; test_id: string; email: string; code: string;
@@ -134,7 +135,7 @@ Good luck.`);
             <tr key={i.id} className="border-t">
               <td className="py-2">{i.email}</td>
               <td><code className="font-mono">{i.code}</code></td>
-              <td>{i.used_at ? <span className="text-green-400">used {new Date(i.used_at).toLocaleString()}</span> : <span className="text-zinc-500">pending</span>}</td>
+              <td>{i.used_at ? <span className="text-green-400">used {formatIST(i.used_at)}</span> : <span className="text-zinc-500">pending</span>}</td>
               <td className="text-right">
                 <a href={mailtoLink(i)} className="text-red-400 underline mr-3">email</a>
                 <button className="text-red-600" onClick={() => remove(i.id)}>delete</button>
