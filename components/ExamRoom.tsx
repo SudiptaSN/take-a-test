@@ -25,7 +25,14 @@ export default function ExamRoom({ test, questions, attempt }: { test: any; ques
   const [idx, setIdx] = useState(0);
   const [now, setNow] = useState<number>(Date.now());
   const [isFullscreen, setIsFullscreen] = useState(true);
-  const endAt = useRef<number>(new Date(attempt.started_at).getTime() + test.duration_minutes * 60_000);
+  const [isPaused, setIsPaused] = useState(!!attempt.paused_at);
+  const [dndChecked, setDndChecked] = useState(false);
+  const extraMinutesRef = useRef<number>(attempt.extra_minutes || 0);
+  const endAt = useRef<number>(new Date(attempt.started_at).getTime() + (test.duration_minutes + (attempt.extra_minutes || 0)) * 60_000);
+
+  // Mobile / fullscreen detection
+  const fullscreenSupported = useRef(typeof document !== "undefined" && !!document.documentElement?.requestFullscreen);
+  const isMobileRef = useRef(typeof navigator !== "undefined" && /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent));
 
   // AI Refs
   const cocoModelRef = useRef<any>(null);
@@ -109,7 +116,7 @@ export default function ExamRoom({ test, questions, attempt }: { test: any; ques
     setPhase("submitted");
     router.push("/dashboard");
     router.refresh();
-  }, [answers, attempt.id, questions, router, supabase]);
+  }, [test.id, router]);
 
   const addViolation = useCallback((kind: string, detail?: any) => {
     logEvent(kind, detail);
@@ -177,7 +184,7 @@ export default function ExamRoom({ test, questions, attempt }: { test: any; ques
     return Math.abs(noseRatio - 0.5);
   }, []);
 
-  // Start: request camera + fullscreen
+  // Start: request camera + fullscreen (gracefully handles mobile where fullscreen isn't supported)
   const startExam = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 }, audio: false });
@@ -187,9 +194,21 @@ export default function ExamRoom({ test, questions, attempt }: { test: any; ques
       setBanner("Camera is required. Allow camera access and reload.");
       return;
     }
-    try { await containerRef.current?.requestFullscreen(); }
-    catch { setBanner("Fullscreen is required."); return; }
-    
+
+    // Attempt fullscreen — on mobile this may fail silently or throw, which is fine
+    if (fullscreenSupported.current) {
+      try { await containerRef.current?.requestFullscreen(); }
+      catch {
+        // Fullscreen not available (mobile browser, iframe restriction, etc.)
+        // Proceed in monitored mode instead of blocking the exam
+        fullscreenSupported.current = false;
+        logEvent("fullscreen_unavailable", { mobile: isMobileRef.current, ua: navigator.userAgent });
+      }
+    }
+
+    // On mobile, try to lock orientation to portrait to limit multitasking
+    try { await (screen.orientation as any)?.lock?.("portrait"); } catch {}
+
     setPhase("onboarding");
   };
 
@@ -231,6 +250,7 @@ export default function ExamRoom({ test, questions, attempt }: { test: any; ques
   useEffect(() => {
     if (phase !== "active") return;
 
+    // Fullscreen exit — only wire if fullscreen is actually supported & active
     const onFsChange = () => {
       if (!document.fullscreenElement) {
         addViolation("fullscreen_exit");
@@ -239,53 +259,125 @@ export default function ExamRoom({ test, questions, attempt }: { test: any; ques
         setIsFullscreen(true);
       }
     };
-    const onVis = () => { if (document.hidden) addViolation("tab_blur"); };
-    const onBlur = () => addViolation("window_blur");
+    // Visibility change — works on ALL platforms including mobile
+    const onVis = () => { if (document.hidden) addViolation("tab_switch"); };
+    // Window blur — debounced to avoid false positives from clicking URL bar / OS chrome
+    let blurTimer: ReturnType<typeof setTimeout> | null = null;
+    const onBlur = () => {
+      blurTimer = setTimeout(() => {
+        if (document.hidden) addViolation("window_blur");
+      }, 1000);
+    };
+    const onFocus = () => { if (blurTimer) { clearTimeout(blurTimer); blurTimer = null; } };
     const onCopy = (e: ClipboardEvent) => { e.preventDefault(); addViolation("copy_blocked"); };
     const onPaste = (e: ClipboardEvent) => { e.preventDefault(); addViolation("paste_blocked"); };
     const onCut = (e: ClipboardEvent) => { e.preventDefault(); addViolation("cut_blocked"); };
     const onContext = (e: MouseEvent) => { e.preventDefault(); };
+    // Touch-based text selection prevention on mobile
+    const onSelectStart = (e: Event) => { e.preventDefault(); };
+    // Block drag (prevents dragging text/images to other apps)
+    const onDragStart = (e: DragEvent) => { e.preventDefault(); };
+
+    // Block long-press (Google Circle to Search, context menus, text selection on mobile).
+    // If a touch lasts longer than 300ms without moving, we cancel it.
+    let longPressTimer: ReturnType<typeof setTimeout> | null = null;
+    const onTouchStart = () => {
+      longPressTimer = setTimeout(() => {
+        // Long press detected — likely Google Circle to Search or text selection attempt.
+        // This is a VIOLATION, not just a warning.
+        addViolation("long_press_search", { device: "mobile" });
+      }, 500);
+    };
+    const onTouchEnd = () => { if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; } };
+    const onTouchMove = () => { if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; } };
+
     const onKey = (e: KeyboardEvent) => {
-      // Block common shortcuts
       const k = e.key.toLowerCase();
       if ((e.ctrlKey || e.metaKey) && ["c", "v", "x", "p", "s", "u"].includes(k)) { e.preventDefault(); addViolation("shortcut_blocked", { key: k }); }
       if (k === "printscreen") { e.preventDefault(); addViolation("printscreen_blocked"); }
       if (k === "f12") e.preventDefault();
     };
 
-    document.addEventListener("fullscreenchange", onFsChange);
+    // Only listen for fullscreen changes if the API is supported
+    if (fullscreenSupported.current) {
+      document.addEventListener("fullscreenchange", onFsChange);
+    }
     document.addEventListener("visibilitychange", onVis);
     window.addEventListener("blur", onBlur);
+    window.addEventListener("focus", onFocus);
     document.addEventListener("copy", onCopy);
     document.addEventListener("paste", onPaste);
     document.addEventListener("cut", onCut);
     document.addEventListener("contextmenu", onContext);
+    document.addEventListener("selectstart", onSelectStart);
+    document.addEventListener("dragstart", onDragStart);
     document.addEventListener("keydown", onKey);
+    document.addEventListener("touchstart", onTouchStart, { passive: true });
+    document.addEventListener("touchend", onTouchEnd, { passive: true });
+    document.addEventListener("touchmove", onTouchMove, { passive: true });
+
+    // Mobile-specific: periodic focus check every 2s.
+    // On mobile, blur/visibilitychange sometimes don't fire when swiping to another app
+    // or pulling down the notification shade. This polling catches those gaps.
+    let mobileCheckInterval: ReturnType<typeof setInterval> | null = null;
+    if (isMobileRef.current) {
+      mobileCheckInterval = setInterval(() => {
+        if (document.hidden) {
+          addViolation("mobile_app_switch");
+        }
+      }, 2000);
+    }
 
     return () => {
-      document.removeEventListener("fullscreenchange", onFsChange);
+      if (fullscreenSupported.current) {
+        document.removeEventListener("fullscreenchange", onFsChange);
+      }
       document.removeEventListener("visibilitychange", onVis);
       window.removeEventListener("blur", onBlur);
+      window.removeEventListener("focus", onFocus);
       document.removeEventListener("copy", onCopy);
       document.removeEventListener("paste", onPaste);
       document.removeEventListener("cut", onCut);
       document.removeEventListener("contextmenu", onContext);
+      document.removeEventListener("selectstart", onSelectStart);
+      document.removeEventListener("dragstart", onDragStart);
       document.removeEventListener("keydown", onKey);
+      document.removeEventListener("touchstart", onTouchStart);
+      document.removeEventListener("touchend", onTouchEnd);
+      document.removeEventListener("touchmove", onTouchMove);
+      if (mobileCheckInterval) clearInterval(mobileCheckInterval);
     };
   }, [phase, addViolation]);
 
-  // Listen for admin immediate disqualification
+  // Listen for admin controls: disqualification, extra time, pause/resume
   useEffect(() => {
     if (phase !== "active") return;
     const sub = supabase.channel(`attempt_${attempt.id}`)
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "attempts", filter: `id=eq.${attempt.id}` }, (payload) => {
-        if (payload.new.status === "terminated") {
+        const updated = payload.new as any;
+        if (updated.status === "terminated") {
           submit(true); // Terminate locally
+          return;
+        }
+        // Admin added/removed time
+        if (typeof updated.extra_minutes === "number" && updated.extra_minutes !== extraMinutesRef.current) {
+          const diff = updated.extra_minutes - extraMinutesRef.current;
+          extraMinutesRef.current = updated.extra_minutes;
+          endAt.current += diff * 60_000;
+          setBanner(diff > 0 ? `⏱️ Admin added ${diff} minute(s) to your exam.` : `⏱️ Admin removed ${Math.abs(diff)} minute(s) from your exam.`);
+          setTimeout(() => setBanner(null), 5000);
+        }
+        // Admin paused/resumed
+        if (updated.paused_at && !isPaused) {
+          setIsPaused(true);
+        } else if (!updated.paused_at && isPaused) {
+          setIsPaused(false);
+          // Timer end was already adjusted via extra_minutes by the resume API
         }
       })
       .subscribe();
     return () => { supabase.removeChannel(sub); };
-  }, [phase, attempt.id, submit, supabase]);
+  }, [phase, attempt.id, submit, supabase, isPaused]);
 
   // Webcam liveness check + AI inference + periodic snapshots
   useEffect(() => {
@@ -367,15 +459,16 @@ export default function ExamRoom({ test, questions, attempt }: { test: any; ques
     return () => clearInterval(i);
   }, [phase, addViolation, addMinorStrike, clearMinorStrikes, estimateHeadYaw, attempt.id, logEvent, supabase]);
 
-  // Timer
+  // Timer — freezes when paused
   useEffect(() => {
     if (phase !== "active") return;
     const i = setInterval(() => {
+      if (isPaused) return; // Don't count down while paused
       const t = Date.now(); setNow(t);
       if (t >= endAt.current) { clearInterval(i); submit(false); }
     }, 1000);
     return () => clearInterval(i);
-  }, [phase, submit]);
+  }, [phase, submit, isPaused]);
 
   if (phase === "prep" || phase === "onboarding") {
     return (
@@ -399,9 +492,19 @@ export default function ExamRoom({ test, questions, attempt }: { test: any; ques
                 <li><b className="text-zinc-100">Duration:</b> {test.duration_minutes} minutes.</li>
               </ul>
             </div>
+            {isMobileRef.current && (
+              <div className="card mt-4 border-amber-900/50 bg-amber-950/20">
+                <p className="text-amber-400 font-bold text-sm uppercase tracking-wider mb-2">📱 Mobile Device Detected</p>
+                <p className="text-zinc-300 text-sm">You <b>MUST</b> enable <b>Do Not Disturb (DND)</b> mode before starting. Incoming calls, notifications, and any app switching will be treated as <b className="text-red-400">immediate violations</b>.</p>
+                <label className="flex items-center gap-2 mt-3 cursor-pointer">
+                  <input type="checkbox" checked={dndChecked} onChange={(e) => setDndChecked(e.target.checked)} className="w-4 h-4 accent-orange-500" />
+                  <span className="text-sm text-zinc-200 font-medium">I have enabled Do Not Disturb mode on my device</span>
+                </label>
+              </div>
+            )}
             {banner && <p className="text-red-100 text-sm mt-4 bg-red-900/80 p-3 rounded">{banner}</p>}
-            <button className="btn mt-6 w-full py-3" onClick={startExam} disabled={!modelsLoaded}>
-               {modelsLoaded ? "Acknowledge & Continue" : "Loading AI Proctoring Engine..."}
+            <button className="btn mt-6 w-full py-3" onClick={startExam} disabled={!modelsLoaded || (isMobileRef.current && !dndChecked)}>
+               {modelsLoaded ? (isMobileRef.current && !dndChecked ? "Enable DND first" : "Acknowledge & Continue") : "Loading AI Proctoring Engine..."}
             </button>
            </>
         ) : (
@@ -426,7 +529,14 @@ export default function ExamRoom({ test, questions, attempt }: { test: any; ques
   const ss = String(remaining % 60).padStart(2, "0");
 
   return (
-    <div ref={containerRef} className="min-h-screen bg-zinc-950" onCopy={(e) => e.preventDefault()} onContextMenu={(e) => e.preventDefault()}>
+    <div
+      ref={containerRef}
+      className="min-h-screen bg-zinc-950"
+      style={{ userSelect: "none", WebkitUserSelect: "none", WebkitTouchCallout: "none" } as React.CSSProperties}
+      onCopy={(e) => e.preventDefault()}
+      onContextMenu={(e) => e.preventDefault()}
+      onDragStart={(e) => e.preventDefault()}
+    >
       {/* Violation banner (red, permanent until next event) */}
       {banner && <div className="bg-red-600 text-white text-center py-2 text-sm font-bold animate-pulse">{banner}</div>}
       {/* Progressive warning banner (amber, shows during minor strikes) */}
@@ -451,7 +561,17 @@ export default function ExamRoom({ test, questions, attempt }: { test: any; ques
       </header>
 
       <main className="max-w-3xl mx-auto p-4 sm:p-6">
-        {!isFullscreen ? (
+        {isPaused ? (
+          <div className="card text-center py-20">
+            <div className="text-5xl mb-4">⏸️</div>
+            <h2 className="text-3xl font-bold text-amber-400 mb-4">Exam Paused</h2>
+            <p className="text-zinc-300 max-w-md mx-auto">Your exam has been paused by the administrator. The timer is frozen. Please wait — it will resume automatically.</p>
+            <div className="mt-6 inline-flex items-center gap-2 text-sm text-zinc-500">
+              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+              Waiting for admin to resume...
+            </div>
+          </div>
+        ) : !isFullscreen && fullscreenSupported.current ? (
           <div className="card text-center py-16">
             <h2 className="text-3xl font-bold text-red-500 mb-4">Fullscreen Exited</h2>
             <p className="text-zinc-300 mb-8 max-w-md mx-auto">You have left fullscreen mode. This is a violation of the exam rules. You must return to fullscreen to continue the exam.</p>

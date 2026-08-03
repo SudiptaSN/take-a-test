@@ -29,6 +29,7 @@ export default async function AdminHome() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Admin · Tests</h1>
         <div className="flex gap-2">
+          <Link href="/admin/appeals" className="btn-secondary">Appeals</Link>
           <Link href="/admin/new" className="btn">New test</Link>
         </div>
       </div>

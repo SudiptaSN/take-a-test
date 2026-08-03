@@ -146,7 +146,19 @@ export default function DateTimePicker({ value, onChange, placeholder = 'Select 
         onClick={() => setIsOpen(!isOpen)}
         className="w-full text-left bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-2 text-zinc-100 hover:bg-zinc-800/80 transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500/50"
       >
-        {isSelectedDateValid ? getCustomDisplayFormat() : <span className="text-zinc-500">{placeholder}</span>}
+        {isSelectedDateValid ? (
+          <span className="flex items-center justify-between w-full">
+            <span>{getCustomDisplayFormat()}</span>
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onChange(''); }}
+              className="text-zinc-500 hover:text-red-400 transition-colors text-xs ml-2"
+              title="Clear date"
+            >
+              ✕
+            </button>
+          </span>
+        ) : <span className="text-zinc-500">{placeholder}</span>}
       </button>
 
       {isOpen && (

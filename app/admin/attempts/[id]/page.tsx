@@ -4,6 +4,7 @@ import Grader from "@/components/Grader";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import LiveMonitor from "@/components/LiveMonitor";
 import DisqualifyButton from "@/components/DisqualifyButton";
+import ExamControls from "@/components/ExamControls";
 import { formatTimeIST } from "@/lib/time";
 
 export default async function AttemptDetail({ params }: { params: Promise<{ id: string }> }) {
@@ -48,6 +49,13 @@ export default async function AttemptDetail({ params }: { params: Promise<{ id: 
         </div>
         <DisqualifyButton attemptId={id} initialStatus={a?.status} />
       </div>
+
+      <ExamControls
+        attemptId={id}
+        initialExtraMinutes={a?.extra_minutes || 0}
+        initialPausedAt={a?.paused_at || null}
+        attemptStatus={a?.status || 'submitted'}
+      />
 
       {longAnswers.length > 0 && (
         <>

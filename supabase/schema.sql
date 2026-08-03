@@ -144,14 +144,29 @@ create policy "admin manage answer_keys" on answer_keys for all
   with check (exists(select 1 from profiles p where p.id = auth.uid() and p.role = 'admin'));
 
 -- attempts
-create policy "own attempts" on attempts for all
-  using (candidate_id = auth.uid() or exists(select 1 from profiles p where p.id = auth.uid() and p.role = 'admin'))
-  with check (candidate_id = auth.uid() or exists(select 1 from profiles p where p.id = auth.uid() and p.role = 'admin'));
+create policy "admin manage attempts" on attempts for all
+  using (exists(select 1 from profiles p where p.id = auth.uid() and p.role = 'admin'))
+  with check (exists(select 1 from profiles p where p.id = auth.uid() and p.role = 'admin'));
+
+create policy "candidate read own attempts" on attempts for select
+  using (candidate_id = auth.uid());
+
+create policy "candidate insert own attempts" on attempts for insert
+  with check (candidate_id = auth.uid());
 
 -- answers
-create policy "own answers" on answers for all
-  using (exists(select 1 from attempts a where a.id = attempt_id and (a.candidate_id = auth.uid() or exists(select 1 from profiles p where p.id = auth.uid() and p.role = 'admin'))))
-  with check (exists(select 1 from attempts a where a.id = attempt_id and a.candidate_id = auth.uid()));
+create policy "admin manage answers" on answers for all
+  using (exists(select 1 from profiles p where p.id = auth.uid() and p.role = 'admin'))
+  with check (exists(select 1 from profiles p where p.id = auth.uid() and p.role = 'admin'));
+
+create policy "candidate read own answers" on answers for select
+  using (exists(select 1 from attempts a where a.id = attempt_id and a.candidate_id = auth.uid()));
+
+create policy "candidate insert own answers" on answers for insert
+  with check (exists(select 1 from attempts a where a.id = attempt_id and a.candidate_id = auth.uid() and a.status = 'in_progress'));
+
+create policy "candidate update own answers" on answers for update
+  using (exists(select 1 from attempts a where a.id = attempt_id and a.candidate_id = auth.uid() and a.status = 'in_progress'));
 
 -- invites
 create policy "admin manage invites" on invites for all
@@ -162,7 +177,7 @@ create policy "candidate read own invite" on invites for select to authenticated
 
 -- proctor events
 create policy "own events insert" on proctor_events for insert
-  with check (exists(select 1 from attempts a where a.id = attempt_id and a.candidate_id = auth.uid()));
+  with check (exists(select 1 from attempts a where a.id = attempt_id and a.candidate_id = auth.uid() and a.status = 'in_progress'));
 create policy "events read" on proctor_events for select
   using (exists(select 1 from attempts a where a.id = attempt_id and (a.candidate_id = auth.uid() or exists(select 1 from profiles p where p.id = auth.uid() and p.role = 'admin'))));
 
@@ -209,6 +224,10 @@ declare
   v_test_id uuid;
   v_status attempt_status;
   v_total numeric := 0;
+  v_started_at timestamptz;
+  v_extra_minutes int;
+  v_duration int;
+  v_paused_at timestamptz;
   r record;
   s numeric;
   resp jsonb;
@@ -217,10 +236,25 @@ declare
 begin
   if v_user_id is null then raise exception 'not signed in'; end if;
 
-  select test_id, status into v_test_id, v_status
-  from attempts where id = p_attempt_id and candidate_id = v_user_id;
+  select a.test_id, a.status, a.started_at, coalesce(a.extra_minutes, 0), t.duration_minutes, a.paused_at
+    into v_test_id, v_status, v_started_at, v_extra_minutes, v_duration, v_paused_at
+  from attempts a
+  join tests t on t.id = a.test_id
+  where a.id = p_attempt_id and a.candidate_id = v_user_id;
+  
   if v_test_id is null then raise exception 'attempt not found'; end if;
   if v_status <> 'in_progress' then raise exception 'attempt not in progress'; end if;
+  
+  -- Prevent submission while paused
+  if v_paused_at is not null then
+    raise exception 'cannot submit while paused';
+  end if;
+
+  -- Validate time limit: allow 2 minutes grace period for network delays
+  if now() > v_started_at + ((v_duration + v_extra_minutes) * interval '1 minute') + interval '2 minutes' then
+    insert into proctor_events (attempt_id, kind, detail) 
+    values (p_attempt_id, 'late_submission', jsonb_build_object('submitted_at', now(), 'expected_end', v_started_at + ((v_duration + v_extra_minutes) * interval '1 minute')));
+  end if;
 
   for r in
     select a.id as aid, q.id as qid, q.type, q.points, a.response, k.correct,
