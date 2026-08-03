@@ -7,6 +7,10 @@ type Q = { id: string; type: "mcq_single" | "mcq_multi" | "long_text"; prompt: s
 
 const SNAPSHOT_INTERVAL_MS = 15000;
 const MAX_VIOLATIONS = 3;
+// Progressive warning: how many consecutive minor flags before it becomes a real violation
+const MINOR_STRIKE_THRESHOLD = 3;
+// Head pose: yaw ratio beyond this = "looking away"
+const HEAD_YAW_THRESHOLD = 0.38;
 
 export default function ExamRoom({ test, questions, attempt }: { test: any; questions: Q[]; attempt: any }) {
   const supabase = createClient();
@@ -28,6 +32,10 @@ export default function ExamRoom({ test, questions, attempt }: { test: any; ques
   const faceapiRef = useRef<any>(null);
   const referenceDescriptorRef = useRef<Float32Array | null>(null);
   const [modelsLoaded, setModelsLoaded] = useState(false);
+
+  // Progressive warning state (persisted across renders via ref so the interval callback sees latest)
+  const minorStrikesRef = useRef(0);
+  const [warningText, setWarningText] = useState<string | null>(null);
 
   // Load ML Models
   useEffect(() => {
@@ -107,7 +115,7 @@ export default function ExamRoom({ test, questions, attempt }: { test: any; ques
     logEvent(kind, detail);
     setViolations((v) => {
       const next = v + 1;
-      setBanner(`Violation (${next}/${MAX_VIOLATIONS}): ${kind}`);
+      setBanner(`⚠️ VIOLATION ${next}/${MAX_VIOLATIONS}: ${kind.replace(/_/g, " ").toUpperCase()}`);
       if (next >= MAX_VIOLATIONS) {
         logEvent("terminated", { reason: "max_violations" });
         submit(true);
@@ -115,6 +123,59 @@ export default function ExamRoom({ test, questions, attempt }: { test: any; ques
       return next;
     });
   }, [logEvent, submit]);
+
+  // Progressive warning for minor infractions (no face / looking away).
+  // Increments a strike counter; only escalates to a real violation after MINOR_STRIKE_THRESHOLD consecutive strikes.
+  // Resets when the candidate is back in frame and looking at the screen.
+  const addMinorStrike = useCallback((reason: string, detail?: any) => {
+    minorStrikesRef.current += 1;
+    const strikes = minorStrikesRef.current;
+    logEvent(`warning_${reason}`, { strikes, ...detail });
+
+    if (strikes >= MINOR_STRIKE_THRESHOLD) {
+      // Escalate: this becomes a real violation
+      minorStrikesRef.current = 0;
+      setWarningText(null);
+      addViolation(reason, { ...detail, escalated_after_strikes: MINOR_STRIKE_THRESHOLD });
+    } else {
+      // Show a scary warning banner but don't count it as a violation yet
+      const remaining = MINOR_STRIKE_THRESHOLD - strikes;
+      setWarningText(
+        `🚨 WARNING: ${reason.replace(/_/g, " ").toUpperCase()} — Look at your screen NOW! (${remaining} more warning${remaining > 1 ? "s" : ""} before violation)`
+      );
+    }
+  }, [addViolation, logEvent]);
+
+  const clearMinorStrikes = useCallback(() => {
+    if (minorStrikesRef.current > 0) {
+      minorStrikesRef.current = 0;
+      setWarningText(null);
+    }
+  }, []);
+
+  // Head pose estimation using the 68-point face landmarks from face-api.js.
+  // We compute the horizontal yaw by comparing the nose tip position relative to the face width.
+  // A perfectly centered face has a ratio of ~0.5. Extreme values indicate looking far left/right.
+  const estimateHeadYaw = useCallback((landmarks: any): number => {
+    const points = landmarks.positions || landmarks._positions;
+    if (!points || points.length < 17) return 0;
+
+    // Jawline endpoints: points 0 (right jaw) and 16 (left jaw)
+    // Nose tip: point 30
+    const jawLeft = points[0];
+    const jawRight = points[16];
+    const noseTip = points[30];
+
+    if (!jawLeft || !jawRight || !noseTip) return 0;
+
+    const faceWidth = Math.abs(jawRight.x - jawLeft.x);
+    if (faceWidth < 10) return 0; // face too small / unreliable
+
+    // Ratio: where the nose sits between the jaw edges (0 = far left, 1 = far right)
+    const noseRatio = (noseTip.x - jawLeft.x) / faceWidth;
+    // Deviation from center (0.5). Positive = looking left, negative = looking right.
+    return Math.abs(noseRatio - 0.5);
+  }, []);
 
   // Start: request camera + fullscreen
   const startExam = async () => {
@@ -230,7 +291,7 @@ export default function ExamRoom({ test, questions, attempt }: { test: any; ques
   useEffect(() => {
     if (phase !== "active") return;
     const i = setInterval(async () => {
-      const track = streamRef.current?.getVideoTracks?.()[0];
+      const track = streamRef.current?.getVideoTracks?.()?.[0];
       if (!track || track.readyState !== "live") { addViolation("camera_off"); return; }
       const canvas = document.createElement("canvas");
       const v = videoRef.current; if (!v) return;
@@ -238,6 +299,7 @@ export default function ExamRoom({ test, questions, attempt }: { test: any; ques
       const ctx = canvas.getContext("2d"); if (!ctx) return;
       ctx.drawImage(v, 0, 0, canvas.width, canvas.height);
       
+      // Check for camera covered (very dark frame = dummy camera or covered lens)
       const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const data = imgData.data;
       let rSum = 0, gSum = 0, bSum = 0, count = 0;
@@ -245,25 +307,46 @@ export default function ExamRoom({ test, questions, attempt }: { test: any; ques
         rSum += data[j]; gSum += data[j+1]; bSum += data[j+2]; count++;
       }
       const avgLuminance = (0.299 * (rSum / count)) + (0.587 * (gSum / count)) + (0.114 * (bSum / count));
-      if (avgLuminance < 10) addViolation("camera_covered");
+      if (avgLuminance < 10) {
+        addViolation("camera_covered"); // Immediate — this is deliberate cheating
+      }
 
-      // AI Inference
+      // AI Inference — face detection, identity verification, head pose
       if (faceapiRef.current) {
          try {
            const detections = await faceapiRef.current.detectAllFaces(v).withFaceLandmarks().withFaceDescriptors();
+
            if (detections.length === 0) {
-              addViolation("no_face_detected");
+              // MINOR: no face detected — use progressive warning
+              addMinorStrike("no_face_detected");
            } else if (detections.length > 1) {
-              addViolation("multiple_faces_detected");
-           } else if (referenceDescriptorRef.current) {
-              const dist = faceapiRef.current.euclideanDistance(detections[0].descriptor, referenceDescriptorRef.current);
-              if (dist > 0.55) { 
-                 addViolation("impersonation_detected", { distance: dist.toFixed(3) });
+              // SEVERE: multiple people — immediate violation
+              addViolation("multiple_faces_detected", { count: detections.length });
+           } else {
+              // Exactly one face detected
+              const detection = detections[0];
+
+              // Identity check — SEVERE if mismatch
+              if (referenceDescriptorRef.current) {
+                 const dist = faceapiRef.current.euclideanDistance(detection.descriptor, referenceDescriptorRef.current);
+                 if (dist > 0.55) { 
+                    addViolation("impersonation_detected", { distance: dist.toFixed(3) });
+                 }
+              }
+
+              // Head pose estimation — MINOR if looking away
+              const yawDeviation = estimateHeadYaw(detection.landmarks);
+              if (yawDeviation > HEAD_YAW_THRESHOLD) {
+                addMinorStrike("looking_away", { yaw: yawDeviation.toFixed(3) });
+              } else {
+                // Face visible and looking at screen — clear any accumulated minor strikes
+                clearMinorStrikes();
               }
            }
          } catch (e) { console.error("Face-api err", e); }
       }
 
+      // Object detection — SEVERE for electronics
       if (cocoModelRef.current) {
          try {
            const predictions = await cocoModelRef.current.detect(v);
@@ -274,6 +357,7 @@ export default function ExamRoom({ test, questions, attempt }: { test: any; ques
          } catch (e) { console.error("Coco-ssd err", e); }
       }
 
+      // Upload snapshot
       const blob: Blob | null = await new Promise((res) => canvas.toBlob(res, "image/jpeg", 0.6));
       if (!blob) return;
       const path = `${attempt.id}/${Date.now()}.jpg`;
@@ -281,7 +365,7 @@ export default function ExamRoom({ test, questions, attempt }: { test: any; ques
       if (!up.error) logEvent("snapshot", { path });
     }, SNAPSHOT_INTERVAL_MS);
     return () => clearInterval(i);
-  }, [phase, addViolation, attempt.id, logEvent, supabase]);
+  }, [phase, addViolation, addMinorStrike, clearMinorStrikes, estimateHeadYaw, attempt.id, logEvent, supabase]);
 
   // Timer
   useEffect(() => {
@@ -305,6 +389,7 @@ export default function ExamRoom({ test, questions, attempt }: { test: any; ques
               <ul className="list-disc pl-5 space-y-2 text-zinc-300 mt-3">
                 <li><b className="text-zinc-100">Absolute Fullscreen Lockdown:</b> Any attempt to exit fullscreen will trigger an immediate violation.</li>
                 <li><b className="text-zinc-100">AI Vision Surveillance:</b> Your webcam must remain active. We use AI to detect multiple people, electronic devices (cell phones), and verify your identity in real-time.</li>
+                <li><b className="text-zinc-100">Head Pose Tracking:</b> Our AI monitors the direction you are facing. Persistently looking away from the screen will trigger warnings, and repeated offenses will be escalated to violations.</li>
                 <li><b className="text-zinc-100">Environment Integrity:</b> Right-clicking, copying, pasting, and all keyboard shortcuts are strictly prohibited and actively blocked.</li>
                 <li><b className="text-zinc-100">Focus Tracking:</b> Looking away from the window or switching tabs will be instantly flagged.</li>
                 <li><b className="text-red-400">Zero Tolerance:</b> {MAX_VIOLATIONS} violations will result in the immediate and permanent termination of your exam.</li>
@@ -342,7 +427,12 @@ export default function ExamRoom({ test, questions, attempt }: { test: any; ques
 
   return (
     <div ref={containerRef} className="min-h-screen bg-zinc-950" onCopy={(e) => e.preventDefault()} onContextMenu={(e) => e.preventDefault()}>
-      {banner && <div className="bg-red-600 text-white text-center py-2 text-sm">{banner}</div>}
+      {/* Violation banner (red, permanent until next event) */}
+      {banner && <div className="bg-red-600 text-white text-center py-2 text-sm font-bold animate-pulse">{banner}</div>}
+      {/* Progressive warning banner (amber, shows during minor strikes) */}
+      {warningText && !banner && (
+        <div className="bg-amber-600 text-white text-center py-2 text-sm font-bold animate-pulse">{warningText}</div>
+      )}
       <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border-b border-zinc-800 bg-zinc-900 gap-4">
         <div className="text-zinc-200 select-none w-full sm:w-auto">
           <b className="block sm:inline truncate">{test.title}</b> <span className="text-zinc-500 text-sm">· Q{idx + 1}/{shuffledQuestions.length}</span>
