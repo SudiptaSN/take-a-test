@@ -112,7 +112,7 @@ export default async function TakeTest({ params }: { params: Promise<{ id: strin
             </p>
             <AppealForm attemptId={attempt.id} testTitle={test.title} />
           </>
-        ) : test.results_published ? (
+        ) : (test.results_published || test.auto_publish_results) ? (
           <div className="bg-red-950/20 border border-red-900/50 rounded-xl p-6 mb-8">
             <h2 className="text-lg font-semibold text-zinc-400 mb-1">Your Score</h2>
             <div className="text-6xl font-bold text-orange-500">{attempt.score ?? 0} pts</div>
@@ -125,12 +125,12 @@ export default async function TakeTest({ params }: { params: Promise<{ id: strin
 
         <div className="mt-6 flex justify-center gap-3">
           <a href="/dashboard" className="btn-secondary">Back to Dashboard</a>
-          {test.is_leaderboard_public && test.results_published && (
+          {test.is_leaderboard_public && (test.results_published || test.auto_publish_results) && (
             <a href={`/test/${id}/leaderboard`} className="btn bg-orange-600 hover:bg-orange-500 border-none text-white shadow-[0_0_15px_rgba(234,88,12,0.3)]">View Wall of Flame 🔥</a>
           )}
         </div>
         
-        {test.results_published && !isTerminated && (
+        {(test.results_published || test.auto_publish_results) && !isTerminated && (
           <div className="mt-8 pt-8 border-t border-zinc-800">
             <RoastButton attemptId={attempt.id} />
           </div>

@@ -16,11 +16,6 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const { data: test } = await supabase.from("tests").select("title, results_published").eq("id", id).single();
     if (!test) return NextResponse.json({ error: "test not found" }, { status: 404 });
 
-    // Mark as published
-    if (!test.results_published) {
-      await supabase.from("tests").update({ results_published: true }).eq("id", id);
-    }
-
     // Fetch Leaderboard for Hall of Fame
     const { data: attempts } = await supabase
       .from("attempts")

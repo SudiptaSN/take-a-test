@@ -331,14 +331,16 @@ export default function EditTest() {
             <span className="text-orange-500">📢</span> Publishing & Sharing
           </h2>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <a href={`/admin/tests/${id}/invites`} className="btn-secondary">
-              Manage individual invites →
-            </a>
-            <button onClick={handleInviteAll} className="btn-secondary bg-blue-500/10 border-blue-500/20 text-blue-400 hover:bg-blue-500/20 hover:border-blue-500/30">
-              + Invite all registered candidates
-            </button>
-          </div>
+          {test.invite_only && (
+            <div className="flex flex-wrap items-center gap-3">
+              <a href={`/admin/tests/${id}/invites`} className="btn-secondary">
+                Manage individual invites →
+              </a>
+              <button onClick={handleInviteAll} className="btn-secondary bg-blue-500/10 border-blue-500/20 text-blue-400 hover:bg-blue-500/20 hover:border-blue-500/30">
+                + Invite all registered candidates
+              </button>
+            </div>
+          )}
 
           {test.is_published && (
             <div className="space-y-3 pt-4 border-t border-zinc-800">
@@ -368,28 +370,47 @@ export default function EditTest() {
 
         {/* Results & Sync */}
         <section className="card space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <h2 className="text-lg font-semibold text-zinc-100 flex items-center gap-2">
+            <span className="text-orange-500">🏆</span> Post-Test Actions
+          </h2>
+          <p className="text-sm text-zinc-400">Control how and when candidates see their results, and push scores to Discord.</p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <label className="flex items-start gap-3 p-4 rounded-xl border border-zinc-800 bg-zinc-950 hover:border-zinc-700 transition cursor-pointer group">
+              <input type="checkbox" className="mt-1" checked={test.auto_publish_results || false} onChange={(e) => updateTest({ auto_publish_results: e.target.checked })} />
+              <div>
+                <div className="font-medium text-zinc-200 group-hover:text-white transition">Auto-publish Results</div>
+                <div className="text-xs text-zinc-500 mt-0.5">Candidates see their scores and the leaderboard immediately upon submission.</div>
+              </div>
+            </label>
+
+            <label className="flex items-start gap-3 p-4 rounded-xl border border-zinc-800 bg-zinc-950 hover:border-zinc-700 transition cursor-pointer group">
+              <input type="checkbox" className="mt-1" checked={test.results_published || false} onChange={(e) => updateTest({ results_published: e.target.checked })} />
+              <div>
+                <div className="font-medium text-zinc-200 group-hover:text-white transition">Manual Publish Override</div>
+                <div className="text-xs text-zinc-500 mt-0.5">Turn this on to manually publish all results if auto-publish was off.</div>
+              </div>
+            </label>
+          </div>
+
+          <div className="pt-4 mt-4 border-t border-zinc-800 flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-zinc-100 flex items-center gap-2">
-                <span className="text-orange-500">🏆</span> Post-Test Actions
-              </h2>
-              <p className="text-sm text-zinc-400 mt-1">Make results visible to candidates and push to Discord Hall of Fame.</p>
+              <div className="text-sm font-medium text-zinc-300">Discord Hall of Fame</div>
+              <div className="text-xs text-zinc-500 mt-0.5">Manually push the finalized top scores to your Discord server.</div>
             </div>
             <button 
               onClick={async () => {
-                if (!confirm("Push results to candidates and the Discord Hall of Fame? This cannot be undone.")) return;
-                const res = await fetch(`/api/admin/tests/${id}/push-results`, { method: "POST" });
+                if (!confirm("Push the Hall of Fame to Discord? This will post the current top 3 scores.")) return;
+                const res = await fetch(`/api/admin/tests/${id}/push-discord`, { method: "POST" });
                 if (res.ok) {
-                  toast("Results pushed successfully!", "success");
-                  updateTest({ results_published: true });
+                  toast("Pushed to Discord successfully!", "success");
                 } else {
-                  toast("Failed to push results", "error");
+                  toast("Failed to push to Discord", "error");
                 }
               }} 
               className="btn text-sm whitespace-nowrap"
-              disabled={test.results_published}
             >
-              {test.results_published ? "Results Published ✓" : "Push Results & Hall of Fame"}
+              Push to Discord
             </button>
           </div>
         </section>

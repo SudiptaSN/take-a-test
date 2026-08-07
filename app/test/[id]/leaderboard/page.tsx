@@ -47,7 +47,7 @@ export default async function Leaderboard({ params }: { params: Promise<{ id: st
   const snapshotPaths = (snapshotEvents || []).map(e => e.detail?.path).filter(Boolean);
   let signedUrls = new Map();
   
-  if (snapshotPaths.length > 0 && test.results_published) {
+  if (snapshotPaths.length > 0 && (test.results_published || test.auto_publish_results)) {
     const { data: signed } = await adminDb.storage.from("snapshots").createSignedUrls(snapshotPaths, 3600);
     if (signed) {
       signed.forEach((s, idx) => {
@@ -102,7 +102,7 @@ export default async function Leaderboard({ params }: { params: Promise<{ id: st
                   </div>
                 </div>
                 
-                {test.results_published && attemptSnapshots.length > 0 && (
+                { (test.results_published || test.auto_publish_results) && attemptSnapshots.length > 0 && (
                   <div className="mt-4 pt-4 border-t border-zinc-800/50">
                     <p className="text-xs text-zinc-500 uppercase tracking-widest mb-2">Webcam Proof (Peer Review)</p>
                     <div className="flex gap-2 overflow-x-auto pb-2">

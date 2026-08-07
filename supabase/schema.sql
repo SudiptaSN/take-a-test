@@ -40,6 +40,7 @@ create table tests (
   available_until timestamptz,
   is_leaderboard_public boolean not null default false,
   is_hardcore_mode boolean not null default false,
+  auto_publish_results boolean not null default false,
   results_published boolean not null default false,
   reminder_24h_sent boolean not null default false,
   reminder_1h_sent boolean not null default false,
