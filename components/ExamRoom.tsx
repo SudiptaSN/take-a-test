@@ -45,6 +45,9 @@ export default function ExamRoom({ test, questions, attempt }: { test: any; ques
   const minorStrikesRef = useRef(0);
   const [warningText, setWarningText] = useState<string | null>(null);
 
+  const spriteCounter = useRef(0);
+  const spriteCanvas = useRef<HTMLCanvasElement | null>(null);
+
   // Load ML Models
   useEffect(() => {
     let active = true;
@@ -106,6 +109,18 @@ export default function ExamRoom({ test, questions, attempt }: { test: any; ques
   }, [attempt.id, supabase]);
 
   const submit = useCallback(async (terminated = false) => {
+    // Flush any remaining buffered snapshots in the sprite sheet
+    if (spriteCounter.current % 4 !== 0 && spriteCanvas.current) {
+       const blob: Blob | null = await new Promise((res) => spriteCanvas.current!.toBlob(res, "image/jpeg", 0.6));
+       if (blob) {
+         const path = `${attempt.id}/sprite_${Date.now()}_partial.jpg`;
+         // Fire and forget so we don't delay submission
+         supabase.storage.from("snapshots").upload(path, blob, { contentType: "image/jpeg" }).then(up => {
+            if (!up.error) logEvent("snapshot_sprite", { path });
+         });
+       }
+    }
+
     // All grading happens server-side; client never sees correct answers.
     await fetch(`/api/test/${test.id}/submit`, {
       method: "POST",
@@ -117,7 +132,7 @@ export default function ExamRoom({ test, questions, attempt }: { test: any; ques
     setPhase("submitted");
     router.push("/dashboard");
     router.refresh();
-  }, [test.id, router]);
+  }, [test.id, router, attempt.id, supabase, logEvent]);
 
   const addViolation = useCallback((kind: string, detail?: any) => {
     logEvent(kind, detail);
@@ -450,12 +465,41 @@ export default function ExamRoom({ test, questions, attempt }: { test: any; ques
          } catch (e) { console.error("Coco-ssd err", e); }
       }
 
-      // Upload snapshot
-      const blob: Blob | null = await new Promise((res) => canvas.toBlob(res, "image/jpeg", 0.6));
-      if (!blob) return;
-      const path = `${attempt.id}/${Date.now()}.jpg`;
-      const up = await supabase.storage.from("snapshots").upload(path, blob, { contentType: "image/jpeg" });
-      if (!up.error) logEvent("snapshot", { path });
+      // Buffer into 2x2 Sprite Sheet
+      if (!spriteCanvas.current) {
+        spriteCanvas.current = document.createElement("canvas");
+        spriteCanvas.current.width = 640;
+        spriteCanvas.current.height = 480;
+      }
+      
+      const sCtx = spriteCanvas.current.getContext("2d");
+      if (sCtx) {
+        const index = spriteCounter.current % 4;
+        const x = (index % 2) * 320;
+        const y = Math.floor(index / 2) * 240;
+        
+        // Draw the frame
+        sCtx.drawImage(canvas, x, y, 320, 240);
+        
+        // Add timestamp overlay at the bottom of the frame
+        sCtx.fillStyle = "rgba(0, 0, 0, 0.6)";
+        sCtx.fillRect(x, y + 220, 320, 20);
+        sCtx.fillStyle = "white";
+        sCtx.font = "12px monospace";
+        sCtx.fillText(new Date().toLocaleTimeString(), x + 5, y + 234);
+        
+        spriteCounter.current += 1;
+        
+        // When grid is full (4 snapshots = 1 minute), upload it
+        if (spriteCounter.current % 4 === 0) {
+          const blob: Blob | null = await new Promise((res) => spriteCanvas.current!.toBlob(res, "image/jpeg", 0.6));
+          if (blob) {
+            const path = `${attempt.id}/sprite_${Date.now()}.jpg`;
+            const up = await supabase.storage.from("snapshots").upload(path, blob, { contentType: "image/jpeg" });
+            if (!up.error) logEvent("snapshot_sprite", { path });
+          }
+        }
+      }
     }, SNAPSHOT_INTERVAL_MS);
     return () => clearInterval(i);
   }, [phase, addViolation, addMinorStrike, clearMinorStrikes, estimateHeadYaw, attempt.id, logEvent, supabase]);
