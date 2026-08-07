@@ -2,12 +2,29 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 
+import { createPortal } from 'react-dom';
+
 export type ToastVariant = 'success' | 'error' | 'info';
 
 export interface ToastItem {
   id: string;
   message: string;
   type: ToastVariant;
+}
+
+function ToastPortal({ toasts, removeToast }: { toasts: ToastItem[], removeToast: (id: string) => void }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted || typeof document === 'undefined') return null;
+  
+  return createPortal(
+    <div className="fixed top-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none max-h-[calc(100vh-2rem)] overflow-y-auto pr-1">
+      {toasts.slice(-5).map((t) => (
+        <ToastMessage key={t.id} toast={t} onDismiss={() => removeToast(t.id)} />
+      ))}
+    </div>,
+    document.body
+  );
 }
 
 export function useToast() {
@@ -23,11 +40,7 @@ export function useToast() {
   }, []);
 
   const ToastContainer = useCallback(() => (
-    <div className="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none max-h-[calc(100vh-2rem)] overflow-y-auto pr-1">
-      {toasts.slice(-5).map((t) => (
-        <ToastMessage key={t.id} toast={t} onDismiss={() => removeToast(t.id)} />
-      ))}
-    </div>
+    <ToastPortal toasts={toasts} removeToast={removeToast} />
   ), [toasts, removeToast]);
 
   return { toast, ToastContainer };

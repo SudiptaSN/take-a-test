@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatTimeIST } from "@/lib/time";
 import MarkdownRenderer from "./MarkdownRenderer";
+import { useToast } from "@/components/Toast";
 
 type Q = { id: string; prompt: string; points: number; type: string; image_url?: string | null };
 
@@ -20,6 +21,7 @@ export default function Grader({
   const [feedback, setFeedback] = useState(initialFeedback || "");
   const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState<string | null>(null);
+  const { toast, ToastContainer } = useToast();
 
   const save = async () => {
     setSaving(true);
@@ -28,7 +30,7 @@ export default function Grader({
       body: JSON.stringify({ score: score === "" ? null : Number(score), feedback }),
     });
     setSaving(false);
-    if (!r.ok) { const j = await r.json().catch(() => ({})); return alert(j.error || "Save failed"); }
+    if (!r.ok) { const j = await r.json().catch(() => ({})); return toast(j.error || "Save failed", "error"); }
     const j = await r.json();
     setSavedAt(formatTimeIST(new Date()));
     router.refresh();
@@ -36,6 +38,8 @@ export default function Grader({
   };
 
   return (
+    <>
+    <ToastContainer />
     <div className="card">
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1">
@@ -59,5 +63,6 @@ export default function Grader({
         {savedAt && <span className="text-xs text-green-400">saved at {savedAt}</span>}
       </div>
     </div>
+    </>
   );
 }

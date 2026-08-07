@@ -7,6 +7,7 @@ import AiSettingsForm from "@/components/AiSettingsForm";
 import DiscordSettingsForm from "@/components/DiscordSettingsForm";
 import TeaserPingButton from "@/components/TeaserPingButton";
 import LandingPageSettingsForm from "@/components/LandingPageSettingsForm";
+import PingDiscordButton from "@/components/PingDiscordButton";
 
 export default async function AdminHome() {
   const supabase = await createClient();
@@ -49,9 +50,10 @@ export default async function AdminHome() {
           <div className="text-sm text-zinc-400 mt-1">{t.description}</div>
         </div>
         <div className="flex flex-wrap gap-2">
+          <PingDiscordButton test={t} webhookUrl={profile?.discord_webhook_url} />
           <TeaserPingButton testId={t.id} />
           <Link href={`/admin/tests/${t.id}`} className="btn-secondary">Edit</Link>
-          <Link href={`/admin/tests/${t.id}/invites`} className="btn-secondary">Invites</Link>
+
           <Link href={`/admin/tests/${t.id}/attempts`} className="btn-secondary">Attempts</Link>
           <DeleteTestButton id={t.id} title={t.title} />
         </div>

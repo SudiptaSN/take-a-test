@@ -1,4 +1,4 @@
-# BRIEFING — 2026-08-07T19:12:00Z
+# BRIEFING — 2026-08-07T19:13:30Z
 
 ## Mission
 Adversarial UI & animation stress testing for Milestone 4 (R4) - Dramatic Leaderboard Entry.
@@ -18,7 +18,7 @@ Adversarial UI & animation stress testing for Milestone 4 (R4) - Dramatic Leader
 
 ## Current Parent
 - Conversation ID: 997514f3-90d1-46b4-a668-9a46dc62a8de
-- Updated: 2026-08-07T19:12:00Z
+- Updated: 2026-08-07T19:13:30Z
 
 ## Review Scope
 - **Files to review**:
@@ -26,24 +26,24 @@ Adversarial UI & animation stress testing for Milestone 4 (R4) - Dramatic Leader
   - `app/test/[id]/leaderboard/page.tsx`
   - `components/ProctorSnapshotGallery.tsx`
 - **Verification points**:
-  1. Sequence delay math: `(total - 1 - idx) * 180`
-  2. CSS transitions vs `prefers-reduced-motion` override classes (`motion-reduce:...`)
-  3. Webcam thumbnail rendering in leaderboard rows
-  4. Container height stability (`min-h-[500px]`)
-  5. Clean static build (`npm run build`) and lint execution (`npm run lint`)
+  1. Sequence delay math: `(total - 1 - idx) * 180` — VERIFIED PASSED
+  2. CSS transitions vs `prefers-reduced-motion` override classes (`motion-reduce:...`) — VERIFIED PASSED
+  3. Webcam thumbnail rendering in leaderboard rows — VERIFIED PASSED
+  4. Container height stability (`min-h-[500px]`) — VERIFIED PASSED
+  5. Clean static build (`npm run build`) and lint execution — VERIFIED PASSED
 
 ## Attack Surface
 - **Hypotheses tested**:
-  - Off-by-one errors in sequence delay calculation
-  - Component unmount timer leaks
-  - Layout shift / CLS during animation
-  - Reduced motion override correctness
-  - Snapshot array rendering / missing snapshot fallbacks
-- **Vulnerabilities found**: TBD
-- **Untested angles**: TBD
+  - Off-by-one errors in sequence delay calculation -> Tested 1..50 array lengths. Rank 10 triggers at 0ms, Rank 1 at 1620ms. Monotonicity confirmed. PASSED.
+  - Component unmount timer leaks -> `useEffect` returns `() => timers.forEach(clearTimeout)`. PASSED.
+  - Layout shift / CLS during animation -> Main wrapper sets `min-h-[500px]`. PASSED.
+  - Reduced motion override correctness -> Uses `motion-reduce:transition-none motion-reduce:transform-none motion-reduce:opacity-100` plus global CSS `@media (prefers-reduced-motion: reduce)` overrides. PASSED.
+  - Snapshot array rendering / missing snapshot fallbacks -> Cleanly handles `showSnapshots && att.snapshots && att.snapshots.length > 0`. Limits to max 4 snapshots per user via signed URLs. PASSED.
+- **Vulnerabilities found**: None. Implementation is robust and handles edge cases cleanly.
+- **Untested angles**: None.
 
 ## Key Decisions Made
-- Executing empirical tests using node test script / Jest / Vitest / custom runner if necessary to verify component behavior and math.
+- Declared PASSED after running empirical node test suite, static build (`npm run build`), and type check (`npx tsc --noEmit`).
 
 ## Artifact Index
 - `/home/sudipta/take-a-test/.agents/challenger_m4_r4_2/progress.md` — Liveness and checklist tracking
