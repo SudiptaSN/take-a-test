@@ -24,7 +24,7 @@ export default function MarkdownRenderer({ content, className = '' }: Props) {
           p: ({node, ...props}) => <p className="mb-4 last:mb-0" {...props} />
         }}
       >
-        {content}
+        {content.replace(/\$\$([\s\S]*?)\$\$/g, '\n\n$$$$\n$1\n$$$$\n\n')}
       </ReactMarkdown>
     </div>
   );
