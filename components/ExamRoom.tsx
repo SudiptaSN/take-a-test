@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import MarkdownRenderer from "./MarkdownRenderer";
 
 type Q = { id: string; type: "mcq_single" | "mcq_multi" | "long_text"; prompt: string; section_title?: string | null; options: { id: string; text: string; image_url?: string | null }[] | null; points: number; image_url?: string | null };
 
@@ -593,7 +594,9 @@ export default function ExamRoom({ test, questions, attempt }: { test: any; ques
               </div>
             )}
             <div className="text-sm text-zinc-400 select-none">{q.type} · {q.points} pts</div>
-            <h2 className="text-lg font-semibold mt-1 whitespace-pre-wrap select-none">{q.prompt}</h2>
+            <div className="mt-1 select-none pointer-events-none">
+              <MarkdownRenderer content={q.prompt} className="text-lg font-semibold whitespace-pre-wrap" />
+            </div>
             {q.image_url && <img src={q.image_url} alt="" className="mt-3 max-h-80 rounded border select-none" onContextMenu={(e) => e.preventDefault()} draggable={false} />}
             <div className="mt-4 space-y-2">
               {q.type === "long_text" && (
@@ -620,8 +623,8 @@ export default function ExamRoom({ test, questions, attempt }: { test: any; ques
                          saveAnswer(q, { selected: next });
                       }}
                     />
-                    <div className="flex-1">
-                      <div>{opt.text}</div>
+                    <div className="flex-1 pointer-events-none">
+                      <MarkdownRenderer content={opt.text} />
                       {opt.image_url && <img src={opt.image_url} alt="" className="mt-1 max-h-32 rounded border" onContextMenu={(e) => e.preventDefault()} draggable={false} />}
                     </div>
                   </label>

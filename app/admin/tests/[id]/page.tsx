@@ -6,6 +6,8 @@ import Breadcrumbs from '@/components/Breadcrumbs';
 import { ConfirmModal } from '@/components/ConfirmModal';
 import DateTimePicker from '@/components/DateTimePicker';
 import { useToast } from "@/components/Toast";
+import { DeleteTestButton } from "@/components/DeleteTestButton";
+import MarkdownRenderer from "@/components/MarkdownRenderer";
 
 type QType = "mcq_single" | "mcq_multi" | "long_text";
 type Option = { id: string; text: string; image_url?: string | null };
@@ -454,10 +456,13 @@ export default function EditTest() {
                          const v = e.target.value; setQuestions((arr) => arr.map((x, k) => k === i ? { ...x, section_title: v } : x));
                        }} />
 
-                <div>
-                  <textarea className="input min-h-[80px]" placeholder="Question prompt" value={q.prompt} onChange={(e) => {
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <textarea className="input min-h-[80px]" placeholder="Question prompt (Markdown & LaTeX supported)" value={q.prompt} onChange={(e) => {
                     const v = e.target.value; setQuestions((arr) => arr.map((x, k) => k === i ? { ...x, prompt: v } : x));
                   }} />
+                  <div className="p-3 border border-zinc-800 rounded bg-zinc-900/50 min-h-[80px] overflow-auto">
+                    {q.prompt ? <MarkdownRenderer content={q.prompt} /> : <span className="text-zinc-600 text-sm">Preview...</span>}
+                  </div>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-4">

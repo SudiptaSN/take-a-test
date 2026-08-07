@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatTimeIST } from "@/lib/time";
+import MarkdownRenderer from "./MarkdownRenderer";
 
 type Q = { id: string; prompt: string; points: number; type: string; image_url?: string | null };
 
@@ -39,7 +40,9 @@ export default function Grader({
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1">
           <div className="text-xs text-zinc-400">{question.type} · max {question.points} pts</div>
-          <div className="font-medium mt-1 whitespace-pre-wrap">{question.prompt}</div>
+          <div className="mt-1 pointer-events-none">
+            <MarkdownRenderer content={question.prompt} className="font-medium whitespace-pre-wrap" />
+          </div>
           {question.image_url && <img src={question.image_url} alt="" className="mt-2 max-h-40 rounded border" />}
         </div>
       </div>

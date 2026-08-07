@@ -135,18 +135,16 @@ export default async function Home() {
                       </tr>
                     </thead>
                     <tbody className="text-zinc-300 divide-y divide-zinc-800">
-                      <tr><td className="p-3">Aug 04</td><td className="p-3">Test 1</td><td className="p-3">Physics</td><td className="p-3">Bengali A</td></tr>
-                      <tr><td className="p-3">Aug 06</td><td className="p-3">Test 2</td><td className="p-3">Chemistry</td><td className="p-3">English B</td></tr>
-                      <tr><td className="p-3">Aug 08</td><td className="p-3">Test 3</td><td className="p-3">Mathematics</td><td className="p-3">Bio / Comp Sc.</td></tr>
-                      <tr><td className="p-3">Aug 11</td><td className="p-3">Test 4</td><td className="p-3">Physics</td><td className="p-3">Bengali A</td></tr>
-                      <tr><td className="p-3">Aug 13</td><td className="p-3">Test 5</td><td className="p-3">Chemistry</td><td className="p-3">English B</td></tr>
-                      <tr><td className="p-3">Aug 15</td><td className="p-3">Test 6</td><td className="p-3">Mathematics</td><td className="p-3">Bio / Comp Sc.</td></tr>
-                      <tr><td className="p-3">Aug 18</td><td className="p-3">Test 7</td><td className="p-3">Physics</td><td className="p-3">Bengali A</td></tr>
-                      <tr><td className="p-3">Aug 20</td><td className="p-3">Test 8</td><td className="p-3">Chemistry</td><td className="p-3">English B</td></tr>
-                      <tr><td className="p-3">Aug 22</td><td className="p-3">Test 9</td><td className="p-3">Mathematics</td><td className="p-3">Bio / Comp Sc.</td></tr>
-                      <tr className="bg-orange-500/10 text-orange-400 font-bold"><td className="p-3">Aug 25</td><td className="p-3">MOCK 1</td><td className="p-3">Physics (Full)</td><td className="p-3">Math (Full)</td></tr>
-                      <tr className="bg-orange-500/10 text-orange-400 font-bold"><td className="p-3">Aug 27</td><td className="p-3">MOCK 2</td><td className="p-3">Chemistry (Full)</td><td className="p-3">Bio / CS (Full)</td></tr>
-                      <tr className="bg-orange-500/10 text-orange-400 font-bold"><td className="p-3">Aug 29</td><td className="p-3">MOCK 3</td><td className="p-3">Bengali A (Full)</td><td className="p-3">English B (Full)</td></tr>
+                      <tr className="bg-red-900/20 font-semibold"><td className="p-3">Aug 10</td><td className="p-3">Tests 1, 2, 3</td><td className="p-3">Physics, Chemistry, Math</td><td className="p-3">Bengali, English, Bio/CS</td></tr>
+                      <tr><td className="p-3">Aug 12</td><td className="p-3">Test 4</td><td className="p-3">Physics</td><td className="p-3">Bengali A</td></tr>
+                      <tr><td className="p-3">Aug 14</td><td className="p-3">Test 5</td><td className="p-3">Chemistry</td><td className="p-3">English B</td></tr>
+                      <tr><td className="p-3">Aug 16</td><td className="p-3">Test 6</td><td className="p-3">Mathematics</td><td className="p-3">Bio / Comp Sc.</td></tr>
+                      <tr><td className="p-3">Aug 19</td><td className="p-3">Test 7</td><td className="p-3">Physics</td><td className="p-3">Bengali A</td></tr>
+                      <tr><td className="p-3">Aug 21</td><td className="p-3">Test 8</td><td className="p-3">Chemistry</td><td className="p-3">English B</td></tr>
+                      <tr><td className="p-3">Aug 23</td><td className="p-3">Test 9</td><td className="p-3">Mathematics</td><td className="p-3">Bio / Comp Sc.</td></tr>
+                      <tr className="bg-orange-500/10 text-orange-400 font-bold"><td className="p-3">Aug 26</td><td className="p-3">MOCK 1</td><td className="p-3">Physics (Full)</td><td className="p-3">Math (Full)</td></tr>
+                      <tr className="bg-orange-500/10 text-orange-400 font-bold"><td className="p-3">Aug 28</td><td className="p-3">MOCK 2</td><td className="p-3">Chemistry (Full)</td><td className="p-3">Bio / CS (Full)</td></tr>
+                      <tr className="bg-orange-500/10 text-orange-400 font-bold"><td className="p-3">Aug 30</td><td className="p-3">MOCK 3</td><td className="p-3">Bengali A (Full)</td><td className="p-3">English B (Full)</td></tr>
                     </tbody>
                   </table>
                 </div>
@@ -154,7 +152,7 @@ export default async function Home() {
 
               <div className="space-y-8">
                 <div>
-                  <h4 className="text-xl font-bold text-orange-500 mb-3 border-b border-zinc-800 pb-2">📚 Phase 1: The Foundation (Aug 4 - Aug 8)</h4>
+                  <h4 className="text-xl font-bold text-orange-500 mb-3 border-b border-zinc-800 pb-2">📚 Phase 1: The Foundation (Aug 10)</h4>
                   <ul className="space-y-4 text-zinc-300">
                     <li><strong className="text-white block mb-1">Test 1: Physics + Bengali A</strong>Physics: Unit 1 & 2 | Bengali A: 'পুঁইমাচা', 'বিড়াল', প্রাচীন বাংলা</li>
                     <li><strong className="text-white block mb-1">Test 2: Chemistry + English B</strong>Chem: Unit 1, 2, 3 | Eng: 3 Prose Chapters + Unseen</li>
@@ -162,7 +160,7 @@ export default async function Home() {
                   </ul>
                 </div>
                 <div>
-                  <h4 className="text-xl font-bold text-orange-500 mb-3 border-b border-zinc-800 pb-2">⚙️ Phase 2: The Core Grind (Aug 11 - Aug 15)</h4>
+                  <h4 className="text-xl font-bold text-orange-500 mb-3 border-b border-zinc-800 pb-2">⚙️ Phase 2: The Core Grind (Aug 12 - Aug 16)</h4>
                   <ul className="space-y-4 text-zinc-300">
                     <li><strong className="text-white block mb-1">Test 4: Physics + Bengali A</strong>Physics: Unit 3 & 4 | Bengali A: 'ঈশ্বরচন্দ্র বিদ্যাসাগর', 'সাম্যবাদী', মধ্যযুগ</li>
                     <li><strong className="text-white block mb-1">Test 5: Chemistry + English B</strong>Chem: Unit 4 & 5 | Eng: 3 Poems + Grammar</li>
@@ -170,7 +168,7 @@ export default async function Home() {
                   </ul>
                 </div>
                 <div>
-                  <h4 className="text-xl font-bold text-orange-500 mb-3 border-b border-zinc-800 pb-2">🧹 Phase 3: The Final Sweep (Aug 18 - Aug 22)</h4>
+                  <h4 className="text-xl font-bold text-orange-500 mb-3 border-b border-zinc-800 pb-2">🧹 Phase 3: The Final Sweep (Aug 19 - Aug 23)</h4>
                   <ul className="space-y-4 text-zinc-300">
                     <li><strong className="text-white block mb-1">Test 7: Physics + Bengali A</strong>Physics: Unit 5 | Bengali A: আন্তর্জাতিক/ভারতীয়, ভাষা</li>
                     <li><strong className="text-white block mb-1">Test 8: Chemistry + English B</strong>Chem: Unit 6 & 7 | Eng: Rapid Reader</li>
@@ -178,7 +176,7 @@ export default async function Home() {
                   </ul>
                 </div>
                 <div className="bg-red-950/50 p-6 rounded-xl border border-red-900/50">
-                  <h4 className="text-xl font-bold text-red-500 mb-3 border-b border-red-900/50 pb-2">🏆 Phase 4: The Mega Mocks (Aug 25 - Aug 29)</h4>
+                  <h4 className="text-xl font-bold text-red-500 mb-3 border-b border-red-900/50 pb-2">🏆 Phase 4: The Mega Mocks (Aug 26 - Aug 30)</h4>
                   <p className="text-zinc-400 mb-4 text-sm italic">80 Marks total per day (40 Marks per subject). Strict time gates. Full Semester 1 Syllabus.</p>
                   <ul className="space-y-2 text-zinc-300 font-medium">
                     <li>Mega Mock 1: Physics (Full) + Math (Full)</li>
