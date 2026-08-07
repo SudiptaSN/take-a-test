@@ -43,16 +43,16 @@ export default function SignupPage() {
         <p className="text-sm text-zinc-400 mt-1">Already invited? Use the email your administrator sent invites to.</p>
         <form onSubmit={submit} className="mt-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-zinc-300 mb-1">Full name</label>
-            <input className="input" placeholder="Full name" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
+            <label htmlFor="fullName" className="block text-sm font-medium text-zinc-300 mb-1">Full name</label>
+            <input id="fullName" className="input" placeholder="Full name" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
           </div>
           <div>
-            <label className="block text-sm font-medium text-zinc-300 mb-1">Email</label>
-            <input className="input" type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            <label htmlFor="email" className="block text-sm font-medium text-zinc-300 mb-1">Email</label>
+            <input id="email" className="input" type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
           </div>
           <div>
-            <label className="block text-sm font-medium text-zinc-300 mb-1">Password</label>
-            <input className="input" type="password" placeholder="Password (min 6)" value={password} onChange={(e) => setPassword(e.target.value)} minLength={6} required />
+            <label htmlFor="password" className="block text-sm font-medium text-zinc-300 mb-1">Password</label>
+            <input id="password" className="input" type="password" placeholder="Password (min 6)" value={password} onChange={(e) => setPassword(e.target.value)} minLength={6} required />
           </div>
           {err && <p className="text-sm text-red-400 bg-red-950/50 border border-red-800/50 rounded-lg px-3 py-2">{err}</p>}
           <button className="btn w-full justify-center" disabled={loading}>{loading ? "Creating…" : "Sign up"}</button>

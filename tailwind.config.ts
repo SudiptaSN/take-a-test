@@ -4,6 +4,7 @@ const config: Config = {
   theme: { 
     extend: {
       fontFamily: {
+        bengali: ['var(--font-bengali)', 'sans-serif'],
         sans: ['var(--font-inter)', 'var(--font-bengali)', 'sans-serif'],
       }
     } 

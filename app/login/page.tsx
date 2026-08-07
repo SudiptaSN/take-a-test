@@ -28,12 +28,12 @@ function LoginInner() {
       <h1 className="text-2xl font-bold">Sign in</h1>
       <form onSubmit={submit} className="mt-6 space-y-4">
         <div>
-          <label className="block text-sm font-medium text-zinc-300 mb-1">Email</label>
-          <input className="input" type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          <label htmlFor="email" className="block text-sm font-medium text-zinc-300 mb-1">Email</label>
+          <input id="email" className="input" type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
         </div>
         <div>
-          <label className="block text-sm font-medium text-zinc-300 mb-1">Password</label>
-          <input className="input" type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+          <label htmlFor="password" className="block text-sm font-medium text-zinc-300 mb-1">Password</label>
+          <input id="password" className="input" type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
         </div>
         {err && <p className="text-sm text-red-400 bg-red-950/50 border border-red-800/50 rounded-lg px-3 py-2">{err}</p>}
         <button className="btn w-full justify-center" disabled={loading}>{loading ? "Signing in…" : "Sign in"}</button>

@@ -6,7 +6,7 @@ import Breadcrumbs from '@/components/Breadcrumbs';
 import { ConfirmModal } from '@/components/ConfirmModal';
 import DateTimePicker from '@/components/DateTimePicker';
 import { useToast } from "@/components/Toast";
-import { DeleteTestButton } from "@/components/DeleteTestButton";
+import DeleteTestButton from "@/components/DeleteTestButton";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 
 type QType = "mcq_single" | "mcq_multi" | "long_text";
@@ -513,10 +513,17 @@ export default function EditTest() {
                               }));
                             }}
                           />
-                          <input className="input flex-1 py-1.5 text-sm" placeholder={`Option ${j + 1}`} value={opt.text} onChange={(e) => {
-                            const v = e.target.value;
-                            setQuestions((arr) => arr.map((x, k) => k === i ? { ...x, options: x.options!.map((o) => o.id === opt.id ? { ...o, text: v } : o) } : x));
-                          }} />
+                          <div className="flex-1 flex flex-col gap-1">
+                            <input className="input w-full py-1.5 text-sm" placeholder={`Option ${j + 1} (Markdown/LaTeX supported)`} value={opt.text} onChange={(e) => {
+                              const v = e.target.value;
+                              setQuestions((arr) => arr.map((x, k) => k === i ? { ...x, options: x.options!.map((o) => o.id === opt.id ? { ...o, text: v } : o) } : x));
+                            }} />
+                            {opt.text && (
+                              <div className="p-2 border border-zinc-800 rounded bg-zinc-900/50 text-sm overflow-auto">
+                                <MarkdownRenderer content={opt.text} />
+                              </div>
+                            )}
+                          </div>
                         </div>
                         
                         <div className="flex items-center gap-2 pl-6 sm:pl-0">
