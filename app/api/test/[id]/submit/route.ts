@@ -22,13 +22,6 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const { error } = await supabase.rpc("submit_attempt", { p_attempt_id: attempt.id, p_terminated: !!terminated });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  // If auto_publish_results is on, push to Discord
-  const { data: test } = await supabase.from("tests").select("auto_publish_results").eq("id", id).single();
-  if (test?.auto_publish_results) {
-    const { pushDiscordHallOfFame } = await import("@/lib/discord");
-    // Call in background so it doesn't block the client response
-    pushDiscordHallOfFame(id, true).catch(console.error);
-  }
 
   return NextResponse.json({ ok: true });
 }

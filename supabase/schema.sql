@@ -42,6 +42,7 @@ create table tests (
   is_hardcore_mode boolean not null default false,
   auto_publish_results boolean not null default false,
   results_published boolean not null default false,
+  results_reveal_date timestamptz,
   reminder_24h_sent boolean not null default false,
   reminder_1h_sent boolean not null default false,
   created_at timestamptz default now()

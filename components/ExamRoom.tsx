@@ -43,6 +43,7 @@ export default function ExamRoom({ test, questions, attempt, existingAnswers = [
   const [isFullscreen, setIsFullscreen] = useState(true);
   const [isPaused, setIsPaused] = useState(!!attempt.paused_at);
   const [dndChecked, setDndChecked] = useState(false);
+  const [consentChecked, setConsentChecked] = useState(false);
   const extraMinutesRef = useRef<number>(attempt.extra_minutes || 0);
   const endAt = useRef<number>(new Date(attempt.started_at).getTime() + (test.duration_minutes + (attempt.extra_minutes || 0)) * 60_000);
 
@@ -562,9 +563,18 @@ export default function ExamRoom({ test, questions, attempt, existingAnswers = [
                 </label>
               </div>
             )}
+            <div className="card mt-4 border-zinc-800 bg-zinc-900/50">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input type="checkbox" checked={consentChecked} onChange={(e) => setConsentChecked(e.target.checked)} className="w-5 h-5 mt-0.5 accent-orange-500 shrink-0" />
+                <div className="text-sm text-zinc-300">
+                  <b className="text-zinc-200 block mb-1">Privacy & Biometric Consent</b>
+                  I consent to the collection and temporary processing of my biometric data (facial recognition and head pose tracking) strictly for identity verification and proctoring purposes during this exam.
+                </div>
+              </label>
+            </div>
             {banner && <p className="text-red-100 text-sm mt-4 bg-red-900/80 p-3 rounded">{banner}</p>}
-            <button className="btn mt-6 w-full py-3" onClick={startExam} disabled={!modelsLoaded || (isMobileRef.current && !dndChecked)}>
-               {modelsLoaded ? (isMobileRef.current && !dndChecked ? "Enable DND first" : "Acknowledge & Continue") : "Loading AI Proctoring Engine..."}
+            <button className="btn mt-6 w-full py-3" onClick={startExam} disabled={!modelsLoaded || !consentChecked || (isMobileRef.current && !dndChecked)}>
+               {modelsLoaded ? (!consentChecked ? "Accept privacy consent to continue" : (isMobileRef.current && !dndChecked ? "Enable DND first" : "Acknowledge & Continue")) : "Loading AI Proctoring Engine..."}
             </button>
            </>
         ) : (

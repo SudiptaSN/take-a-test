@@ -7,6 +7,8 @@ import DisqualifyButton from "@/components/DisqualifyButton";
 import ExamControls from "@/components/ExamControls";
 import { formatTimeIST } from "@/lib/time";
 
+import ProctorSnapshotGallery from "@/components/ProctorSnapshotGallery";
+
 export default async function AttemptDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createClient();
@@ -89,17 +91,11 @@ export default async function AttemptDetail({ params }: { params: Promise<{ id: 
       )}
 
       {signedSnapshots.length > 0 && (
-        <>
-          <h2 className="font-semibold mt-8">Webcam snapshots ({signedSnapshots.length})</h2>
-          <div className="mt-2 grid grid-cols-3 md:grid-cols-6 gap-2">
-            {signedSnapshots.map((s, i) => (
-              <a key={i} href={s.url} target="_blank" rel="noreferrer" className="block">
-                <img src={s.url} alt="" className="aspect-square object-cover rounded border" />
-                <div className="text-[10px] text-zinc-500 mt-0.5">{s.ts ? formatTimeIST(s.ts) : ""}</div>
-              </a>
-            ))}
-          </div>
-        </>
+        <ProctorSnapshotGallery
+          snapshots={signedSnapshots}
+          variant="grid"
+          title={`Webcam snapshots (${signedSnapshots.length})`}
+        />
       )}
 
       <LiveMonitor attemptId={id} initialEvents={events || []} />

@@ -5,8 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import ExamRoom from "@/components/ExamRoom";
 import { SEB_ENFORCEMENT_ENABLED, verifySebRequest } from "@/lib/seb";
 import UnlockForm from "@/components/UnlockForm";
-import RoastButton from "@/components/RoastButton";
-import AppealForm from "@/components/AppealForm";
+import ResultsRevealGuard from "@/components/ResultsRevealGuard";
 import { formatIST } from "@/lib/time";
 
 export default async function TakeTest({ params }: { params: Promise<{ id: string }> }) {
@@ -99,44 +98,8 @@ export default async function TakeTest({ params }: { params: Promise<{ id: strin
     attempt = created;
   }
   if (!attempt) return <main className="p-10">Could not start attempt.</main>;
-   if (attempt.status !== "in_progress") {
-    const isTerminated = attempt.status === "terminated";
-    return (
-      <main className="max-w-xl mx-auto p-10 text-center">
-        <h1 className="text-3xl font-bold mb-2">{isTerminated ? "Exam Terminated" : "Test submitted"}</h1>
-        
-        {isTerminated ? (
-          <>
-            <p className="text-red-400 mt-2 mb-6 bg-red-950/30 border border-red-900/50 p-4 rounded-lg">
-              Your exam was terminated due to violation of proctoring rules. If you believe this was an error, you may submit an appeal below.
-            </p>
-            <AppealForm attemptId={attempt.id} testTitle={test.title} />
-          </>
-        ) : (test.results_published || test.auto_publish_results) ? (
-          <div className="bg-red-950/20 border border-red-900/50 rounded-xl p-6 mb-8">
-            <h2 className="text-lg font-semibold text-zinc-400 mb-1">Your Score</h2>
-            <div className="text-6xl font-bold text-orange-500">{attempt.score ?? 0} pts</div>
-          </div>
-        ) : (
-          <p className="text-zinc-400 mt-2 mb-8 bg-zinc-900/50 border border-zinc-800 p-4 rounded-lg">
-            Your response has been recorded. Results are currently hidden and will be pushed to the Discord Hall of Fame by the admin.
-          </p>
-        )}
-
-        <div className="mt-6 flex justify-center gap-3">
-          <a href="/dashboard" className="btn-secondary">Back to Dashboard</a>
-          {test.is_leaderboard_public && (test.results_published || test.auto_publish_results) && (
-            <a href={`/test/${id}/leaderboard`} className="btn bg-orange-600 hover:bg-orange-500 border-none text-white shadow-[0_0_15px_rgba(234,88,12,0.3)]">View Wall of Flame 🔥</a>
-          )}
-        </div>
-        
-        {(test.results_published || test.auto_publish_results) && !isTerminated && (
-          <div className="mt-8 pt-8 border-t border-zinc-800">
-            <RoastButton attemptId={attempt.id} />
-          </div>
-        )}
-      </main>
-    );
+  if (attempt.status !== "in_progress") {
+    return <ResultsRevealGuard test={test} attempt={attempt} />;
   }
 
   // Access-code gate: required if test has a global code OR this candidate has a pending invite

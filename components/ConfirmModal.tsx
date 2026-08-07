@@ -70,7 +70,7 @@ export function ConfirmModal({
           </button>
           <button 
             onClick={onConfirm} 
-            className={`px-4 py-2 rounded-md font-medium transition-colors ${confirmColors[variant]}`}
+            className={`px-4 py-2 rounded-md font-medium active:scale-95 transition-all ${confirmColors[variant]}`}
           >
             {confirmLabel}
           </button>

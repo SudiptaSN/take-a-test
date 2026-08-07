@@ -23,8 +23,8 @@ export function useToast() {
   }, []);
 
   const ToastContainer = useCallback(() => (
-    <div className="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none">
-      {toasts.map((t) => (
+    <div className="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none max-h-[calc(100vh-2rem)] overflow-y-auto pr-1">
+      {toasts.slice(-5).map((t) => (
         <ToastMessage key={t.id} toast={t} onDismiss={() => removeToast(t.id)} />
       ))}
     </div>
@@ -77,12 +77,13 @@ function ToastMessage({ toast, onDismiss }: { toast: ToastItem; onDismiss: () =>
 
   return (
     <div 
-      className={`relative overflow-hidden pointer-events-auto flex items-center justify-between w-80 backdrop-blur-md border rounded-xl shadow-2xl transition-all duration-300 ease-out transform ${containerClasses[toast.type]} ${mounted ? 'translate-x-0 opacity-100' : 'translate-x-8 opacity-0'}`}
+      className={`relative overflow-hidden pointer-events-auto flex items-center justify-between w-80 backdrop-blur-md border rounded-xl shadow-2xl transition-all duration-300 transform ${containerClasses[toast.type]} ${mounted ? 'translate-x-0 opacity-100 scale-100' : 'translate-x-8 opacity-0 scale-95'}`}
+      style={{ transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)' }}
     >
       <div className="p-4 text-sm font-medium">{toast.message}</div>
       <button 
         onClick={handleManualDismiss} 
-        className="p-4 opacity-70 hover:opacity-100 transition-opacity"
+        className="p-4 opacity-70 hover:opacity-100 active:scale-95 transition-all"
         aria-label="Dismiss"
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

@@ -1,0 +1,1 @@
+ALTER TABLE tests ADD COLUMN IF NOT EXISTS results_reveal_date TIMESTAMPTZ;

@@ -5,7 +5,7 @@ import Navbar from "@/components/Navbar";
 import DeleteTestButton from "@/components/DeleteTestButton";
 import AiSettingsForm from "@/components/AiSettingsForm";
 import DiscordSettingsForm from "@/components/DiscordSettingsForm";
-import PingDiscordButton from "@/components/PingDiscordButton";
+import TeaserPingButton from "@/components/TeaserPingButton";
 import LandingPageSettingsForm from "@/components/LandingPageSettingsForm";
 
 export default async function AdminHome() {
@@ -20,7 +20,8 @@ export default async function AdminHome() {
     redirect("/dashboard");
   }
 
-  const { data: tests } = await supabase.from("tests").select("*").order("created_at", { ascending: false });
+  const { data: testsData } = await supabase.from("tests").select("*").order("created_at", { ascending: false });
+  const tests = testsData || [];
 
   const { data: activeAttemptsData } = await supabase.from("attempts").select("test_id").eq("status", "in_progress");
   const activeAttemptCounts = (activeAttemptsData || []).reduce((acc: any, curr: any) => {
@@ -48,7 +49,7 @@ export default async function AdminHome() {
           <div className="text-sm text-zinc-400 mt-1">{t.description}</div>
         </div>
         <div className="flex flex-wrap gap-2">
-          <PingDiscordButton test={t} webhookUrl={profile?.discord_webhook_url} />
+          <TeaserPingButton testId={t.id} />
           <Link href={`/admin/tests/${t.id}`} className="btn-secondary">Edit</Link>
           <Link href={`/admin/tests/${t.id}/invites`} className="btn-secondary">Invites</Link>
           <Link href={`/admin/tests/${t.id}/attempts`} className="btn-secondary">Attempts</Link>
@@ -76,7 +77,7 @@ export default async function AdminHome() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-10">
         <AiSettingsForm initialKey={profile?.gemini_key} initialShared={profile?.gemini_key_shared || false} />
-        <DiscordSettingsForm initialUrl={profile?.discord_webhook_url} initialHofUrl={profile?.discord_hall_of_fame_url} />
+        <DiscordSettingsForm initialUrl={profile?.discord_webhook_url} />
       </div>
 
       <div className="mt-6 space-y-8">
@@ -90,7 +91,7 @@ export default async function AdminHome() {
         )}
 
         {/* Draft Tests */}
-        {tests?.filter(t => !t.is_published).length > 0 && (
+        {tests.filter(t => !t.is_published).length > 0 && (
           <section>
             <h2 className="text-lg font-bold mb-4 flex items-center gap-2"><span className="text-zinc-500">📝</span> Drafts</h2>
             <div className="space-y-3">
@@ -102,7 +103,7 @@ export default async function AdminHome() {
         )}
 
         {/* Active Tests */}
-        {tests?.filter(t => t.is_published && !t.is_manually_ended && (!t.available_until || new Date() < new Date(t.available_until))).length > 0 && (
+        {tests.filter(t => t.is_published && !t.is_manually_ended && (!t.available_until || new Date() < new Date(t.available_until))).length > 0 && (
           <section>
             <h2 className="text-lg font-bold mb-4 flex items-center gap-2"><span className="text-green-500">🟢</span> Active</h2>
             <div className="space-y-3">
@@ -114,7 +115,7 @@ export default async function AdminHome() {
         )}
 
         {/* Ended Tests */}
-        {tests?.filter(t => t.is_published && (t.is_manually_ended || (t.available_until && new Date() >= new Date(t.available_until)))).length > 0 && (
+        {tests.filter(t => t.is_published && (t.is_manually_ended || (t.available_until && new Date() >= new Date(t.available_until)))).length > 0 && (
           <section>
             <h2 className="text-lg font-bold mb-4 flex items-center gap-2"><span className="text-red-500">🔴</span> Ended</h2>
             <div className="space-y-3 opacity-75">

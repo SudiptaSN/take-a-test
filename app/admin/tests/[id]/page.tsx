@@ -38,6 +38,8 @@ function parseCSV(text: string): string[][] {
   return result;
 }
 
+import QuestionSkeleton from "@/components/skeletons/QuestionSkeleton";
+
 export default function EditTest() {
   const { id } = useParams<{ id: string }>();
   const supabase = createClient();
@@ -197,7 +199,18 @@ export default function EditTest() {
     }
   };
 
-  if (!test) return <main className="p-10">Loading…</main>;
+  if (!test) {
+    return (
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-10 mb-20 space-y-6 animate-fade-up">
+        <div className="h-8 w-64 bg-zinc-800/80 rounded animate-pulse" />
+        <div className="card p-6 space-y-4 animate-pulse">
+          <div className="h-6 w-48 bg-zinc-800/80 rounded" />
+          <div className="h-4 w-96 max-w-full bg-zinc-800/50 rounded" />
+        </div>
+        <QuestionSkeleton count={3} />
+      </main>
+    );
+  }
 
   return (
     <main className="max-w-4xl mx-auto px-4 sm:px-6 py-10 mb-20">
@@ -434,7 +447,7 @@ export default function EditTest() {
           <h2 className="text-lg font-semibold text-zinc-100 flex items-center gap-2">
             <span className="text-orange-500">🏆</span> Post-Test Actions
           </h2>
-          <p className="text-sm text-zinc-400">Control how and when candidates see their results, and push scores to Discord.</p>
+          <p className="text-sm text-zinc-400">Control how and when candidates see their results.</p>
           
           <div className="space-y-4">
             <label className="flex items-start gap-3 p-4 rounded-xl border border-zinc-800 bg-zinc-950 hover:border-zinc-700 transition cursor-pointer group">
@@ -448,6 +461,16 @@ export default function EditTest() {
                 <div className="text-xs text-zinc-500 mt-0.5">Candidates see their scores instantly upon submission. If Public Leaderboard is enabled, they see that too.</div>
               </div>
             </label>
+
+            <div className="relative z-30 pt-2">
+              <label className="block text-sm font-medium text-zinc-300 mb-1">Results Reveal Date (Optional)</label>
+              <DateTimePicker 
+                value={test.results_reveal_date ? new Date(test.results_reveal_date).toISOString() : ""} 
+                onChange={(v) => updateTest({ results_reveal_date: v ? new Date(v).toISOString() : null })} 
+                placeholder="Set countdown reveal target..."
+              />
+              <p className="text-xs text-zinc-500 mt-1">When set, candidate results are locked behind a full-screen ticking countdown clock until this time.</p>
+            </div>
           </div>
 
           <div className="pt-4 mt-4 border-t border-zinc-800 flex flex-col gap-6">
@@ -461,27 +484,6 @@ export default function EditTest() {
                 className={`btn text-sm whitespace-nowrap ${test.results_published ? 'bg-zinc-700 hover:bg-zinc-600 shadow-none text-zinc-300 border border-zinc-600' : ''}`}
               >
                 {test.results_published ? "Unpublish Results" : "Publish Results (MOM)"}
-              </button>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-sm font-medium text-zinc-300">Discord Hall of Fame</div>
-                <div className="text-xs text-zinc-500 mt-0.5">Manually push the finalized top 3 scores to your Discord server.</div>
-              </div>
-              <button 
-                onClick={async () => {
-                  if (!confirm("Push the Hall of Fame to Discord? This will post the current top 3 scores.")) return;
-                  const res = await fetch(`/api/admin/tests/${id}/push-discord`, { method: "POST" });
-                  if (res.ok) {
-                    toast("Pushed to Discord successfully!", "success");
-                  } else {
-                    toast("Failed to push to Discord", "error");
-                  }
-                }} 
-                className="btn text-sm whitespace-nowrap"
-              >
-                Push to Discord
               </button>
             </div>
           </div>

@@ -1,23 +1,31 @@
-# Project: AssOnFire UI/UX Consistency and Premium Aesthetics Upgrade
+# Project: AssOnFire UI/UX & Suspense Features Upgrade
 
 ## Architecture
-- Framework: Next.js 15 (App Router) + Tailwind CSS + TypeScript + React Markdown / KaTeX + Google Fonts
-- Global Styling: `app/globals.css`, `app/layout.tsx`
-- Components: `components/MarkdownRenderer.tsx`, `components/ExamRoom.tsx`
-- Pages: `app/admin/tests/[id]/page.tsx`, `app/test/[id]/page.tsx`, `app/login/page.tsx`, `app/signup/page.tsx`
+- Framework: Next.js 15 (App Router) + Tailwind CSS + TypeScript + React / Framer Motion / Canvas-Confetti
+- Pages & Routes:
+  - Admin Dashboard & Test Management: `app/admin/...`
+  - Student Exam & Attempt Review: `app/test/...`
+  - Public Leaderboard: `app/leaderboard/...` or component
+- Components & Shared Modules:
+  - Proctoring & Lightbox: Proctor snapshot lightbox modal (`components/ProctorLightboxModal.tsx`, `components/ProctorSnapshotGallery.tsx`)
+  - Loaders & Skeleton: Shimmering placeholders (`TestCardSkeleton.tsx`, `QuestionSkeleton.tsx`, `app/admin/loading.tsx`, `app/dashboard/loading.tsx`)
+  - Micro-animations: Active press states, page transitions, bouncy toasts
+  - Suspense Countdown: Results reveal date clock + confetti (`ResultsCountdownClock.tsx`, `ResultsRevealGuard.tsx`, `ConfettiEffect.tsx`)
+  - Discord Integration: Webhook teaser pings (anonymous aggregated stats)
+  - Leaderboard: Staggered bottom-to-top dynamic rank entry
 
 ## Milestones
 | # | Name | Scope | Dependencies | Status |
 |---|------|-------|-------------|--------|
-| 1 | Bilingual Typography Support (R4) | `app/layout.tsx` (Hind Siliguri / Bengali font loading via `next/font/google` & CSS variables) | none | IN_PROGRESS |
-| 2 | Micro-Animations & Glassmorphism (R2) | `app/globals.css` (`active:scale-95` on `.btn`, `backdrop-blur-xl` on `.card`, pulse animations for badges) | M1 | PLANNED |
-| 3 | Obsidian Markdown & MCQ Options Rendering (R1) | `components/MarkdownRenderer.tsx`, `app/globals.css` (prose overrides), `app/admin/tests/[id]/page.tsx`, `app/test/[id]/page.tsx` | M2 | PLANNED |
-| 4 | Form Polish & UI Consistency (R3) | `app/login/page.tsx`, `app/signup/page.tsx` (`htmlFor` strictly matching `id`, `focus:ring-orange-500/50` glow, standardized error styling) | M3 | PLANNED |
+| 1 | UI/UX "Wow Factor" Upgrades (R1) | Dark-mode Lightbox for proctor snapshots, skeleton loaders, micro-animations | none | DONE |
+| 2 | Results Countdown Clock (R2) | `resultsRevealDate` field in tests, full-screen countdown on attempt review, confetti on zero | M1 | DONE |
+| 3 | Discord Teaser Pings (R3) | Purge legacy PingDiscordButton/Hall of Fame, add Admin Teaser Ping with anonymous stats webhook | M2 | DONE |
+| 4 | Dramatic Leaderboard Entry (R4) | Public leaderboard staggered bottom-to-top sliding rank animation | M3 | PLANNED |
 
 ## Interface & Quality Contracts
-- All custom typography overrides must target `.prose pre`, `.prose blockquote`, `.prose table` for Obsidian styling.
-- MCQ options in admin test editor and candidate test view must render via `<MarkdownRenderer />`.
-- Button micro-animations require `active:scale-95` in `.btn`.
-- Card glassmorphism requires `backdrop-blur-xl` in `.card`.
-- All form inputs in `/login` and `/signup` must have `id` attributes that strictly equal the `htmlFor` attribute of their corresponding `<label>`.
-- Bengali font must be imported via `next/font/google` in `layout.tsx` and injected into CSS variables.
+- **Lightbox Modal**: Admins can click any proctor snapshot image to open full-screen lightbox modal; clicking outside closes it. [DONE]
+- **Skeleton Loaders**: Test cards and exam questions must display shimmering skeleton placeholders during loading states instead of empty/blank screens. [DONE]
+- **Micro-Animations**: Buttons have active click scaling (`active:scale-95`), smooth page transitions, and bouncy toasts. [DONE]
+- **Countdown Clock**: Tests with a future `resultsRevealDate` block score access on review page and show ticking countdown. Reaching 00:00:00 triggers confetti and auto-reveals scores. [DONE]
+- **Discord Teaser**: Existing PingDiscordButton / Hall of Fame features must be completely removed. New "Teaser Ping" button on Admin Dashboard calculates anonymous stats (e.g., average %, score > 90% count) and posts to Discord webhook.
+- **Leaderboard**: Ranks dynamically slide and lock into place one by one from bottom to top sequentially.

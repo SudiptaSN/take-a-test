@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import AnimatedLeaderboard, { LeaderboardItem } from "./AnimatedLeaderboard";
 
 export default async function Leaderboard({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -26,7 +27,7 @@ export default async function Leaderboard({ params }: { params: Promise<{ id: st
     .not("score", "is", null);
 
   // Sort by score DESC, then duration ASC
-  const sorted = (attempts || []).sort((a, b) => {
+  const sorted = (attempts || []).sort((a: any, b: any) => {
     if (b.score !== a.score) return (b.score || 0) - (a.score || 0);
     const durA = new Date(a.submitted_at).getTime() - new Date(a.started_at).getTime();
     const durB = new Date(b.submitted_at).getTime() - new Date(b.started_at).getTime();
@@ -56,6 +57,25 @@ export default async function Leaderboard({ params }: { params: Promise<{ id: st
     }
   }
 
+  const leaderboardItems: LeaderboardItem[] = sorted.map((att: any) => {
+    const attemptSnapshots = (snapshotEvents || [])
+      .filter(e => e.attempt_id === att.id && e.detail?.path)
+      .map(e => signedUrls.get(e.detail.path))
+      .filter(Boolean)
+      .slice(0, 4);
+
+    return {
+      id: att.id,
+      score: att.score,
+      started_at: att.started_at,
+      submitted_at: att.submitted_at,
+      profiles: att.profiles,
+      snapshots: attemptSnapshots,
+    };
+  });
+
+  const showSnapshots = Boolean(test.results_published || test.auto_publish_results);
+
   return (
     <main className="max-w-4xl mx-auto p-6 py-12">
       <div className="text-center mb-10">
@@ -66,56 +86,7 @@ export default async function Leaderboard({ params }: { params: Promise<{ id: st
       </div>
 
       <div className="card space-y-4 !p-4">
-        {sorted.length === 0 ? (
-          <div className="p-12 text-center text-zinc-500 bg-zinc-900/50 rounded-lg border border-dashed border-zinc-800">
-            <div className="text-4xl mb-4">🏆</div>
-            <p className="text-lg font-medium text-zinc-400">No one has conquered this yet.</p>
-            <p className="text-sm mt-1">Be the first to get on the Wall of Flame!</p>
-          </div>
-        ) : (
-          sorted.map((att: any, idx: number) => {
-            const durMs = new Date(att.submitted_at).getTime() - new Date(att.started_at).getTime();
-            const mins = Math.floor(durMs / 60000);
-            const secs = Math.floor((durMs % 60000) / 1000);
-            
-            // Get up to 4 snapshots for this attempt
-            const attemptSnapshots = (snapshotEvents || [])
-              .filter(e => e.attempt_id === att.id && e.detail?.path)
-              .map(e => signedUrls.get(e.detail.path))
-              .filter(Boolean)
-              .slice(0, 4);
-            
-            return (
-              <div key={att.id} className="p-4 rounded-lg bg-zinc-900 border border-zinc-800">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="text-2xl font-bold text-zinc-400 w-8 text-right">
-                      {idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : `#${idx + 1}`}
-                    </div>
-                    <div className="font-semibold text-lg text-zinc-200">
-                      {att.profiles?.full_name || "Anonymous User"}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-xl font-bold text-orange-500">{att.score} pts</div>
-                    <div className="text-xs text-zinc-500 font-mono">{mins}m {secs}s</div>
-                  </div>
-                </div>
-                
-                { (test.results_published || test.auto_publish_results) && attemptSnapshots.length > 0 && (
-                  <div className="mt-4 pt-4 border-t border-zinc-800/50">
-                    <p className="text-xs text-zinc-500 uppercase tracking-widest mb-2">Webcam Proof (Peer Review)</p>
-                    <div className="flex gap-2 overflow-x-auto pb-2">
-                      {attemptSnapshots.map((url, i) => (
-                        <img key={i} src={url} alt="Proctor Snapshot" className="h-20 w-auto rounded border border-zinc-700/50 hover:scale-110 relative z-10 transition-transform origin-left" />
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })
-        )}
+        <AnimatedLeaderboard items={leaderboardItems} showSnapshots={showSnapshots} />
       </div>
       
       <div className="mt-8 text-center">
