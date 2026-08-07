@@ -22,6 +22,42 @@ export default async function AdminHome() {
 
   const { data: tests } = await supabase.from("tests").select("*").order("created_at", { ascending: false });
 
+  const { data: activeAttemptsData } = await supabase.from("attempts").select("test_id").eq("status", "in_progress");
+  const activeAttemptCounts = (activeAttemptsData || []).reduce((acc: any, curr: any) => {
+    acc[curr.test_id] = (acc[curr.test_id] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const TestCard = ({ t, profile }: { t: any, profile: any }) => {
+    const isEnded = t.is_published && (t.is_manually_ended || (t.available_until && new Date() >= new Date(t.available_until)));
+    const activeCount = activeAttemptCounts[t.id] || 0;
+
+    return (
+      <div className="card flex items-center justify-between">
+        <div>
+          <div className="font-semibold flex items-center gap-2">
+            {t.title} 
+            {isEnded && <span className="text-xs text-red-500 border border-red-500/20 bg-red-500/10 px-1.5 py-0.5 rounded">ended</span>}
+            {isEnded && activeCount > 0 && (
+              <span className="text-xs text-orange-400 border border-orange-400/20 bg-orange-400/10 px-2 py-0.5 rounded-full flex items-center gap-1 animate-pulse">
+                <span className="w-1.5 h-1.5 bg-orange-500 rounded-full"></span>
+                {activeCount} candidate{activeCount === 1 ? '' : 's'} finishing
+              </span>
+            )}
+          </div>
+          <div className="text-sm text-zinc-400 mt-1">{t.description}</div>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <PingDiscordButton test={t} webhookUrl={profile?.discord_webhook_url} />
+          <Link href={`/admin/tests/${t.id}`} className="btn-secondary">Edit</Link>
+          <Link href={`/admin/tests/${t.id}/invites`} className="btn-secondary">Invites</Link>
+          <Link href={`/admin/tests/${t.id}/attempts`} className="btn-secondary">Attempts</Link>
+          <DeleteTestButton id={t.id} title={t.title} />
+        </div>
+      </div>
+    );
+  };
+
   return (
     <>
     <Navbar />
@@ -43,7 +79,7 @@ export default async function AdminHome() {
         <DiscordSettingsForm initialUrl={profile?.discord_webhook_url} initialHofUrl={profile?.discord_hall_of_fame_url} />
       </div>
 
-      <div className="mt-6 space-y-3">
+      <div className="mt-6 space-y-8">
         {(!tests || tests.length === 0) && (
           <div className="card text-center py-12">
             <div className="text-4xl mb-3">🔥</div>
@@ -52,21 +88,42 @@ export default async function AdminHome() {
             <Link href="/admin/new" className="btn mt-4 inline-flex">Create test</Link>
           </div>
         )}
-        {(tests || []).map((t) => (
-          <div key={t.id} className="card flex items-center justify-between">
-            <div>
-              <div className="font-semibold">{t.title} {t.is_published ? <span className="text-xs text-green-700 ml-2">published</span> : <span className="text-xs text-zinc-500 ml-2">draft</span>}</div>
-              <div className="text-sm text-zinc-400">{t.description}</div>
+
+        {/* Draft Tests */}
+        {tests?.filter(t => !t.is_published).length > 0 && (
+          <section>
+            <h2 className="text-lg font-bold mb-4 flex items-center gap-2"><span className="text-zinc-500">📝</span> Drafts</h2>
+            <div className="space-y-3">
+              {tests.filter(t => !t.is_published).map(t => (
+                <TestCard key={t.id} t={t} profile={profile} />
+              ))}
             </div>
-            <div className="flex flex-wrap gap-2">
-              <PingDiscordButton test={t} webhookUrl={profile?.discord_webhook_url} />
-              <Link href={`/admin/tests/${t.id}`} className="btn-secondary">Edit</Link>
-              <Link href={`/admin/tests/${t.id}/invites`} className="btn-secondary">Invites</Link>
-              <Link href={`/admin/tests/${t.id}/attempts`} className="btn-secondary">Attempts</Link>
-              <DeleteTestButton id={t.id} title={t.title} />
+          </section>
+        )}
+
+        {/* Active Tests */}
+        {tests?.filter(t => t.is_published && !t.is_manually_ended && (!t.available_until || new Date() < new Date(t.available_until))).length > 0 && (
+          <section>
+            <h2 className="text-lg font-bold mb-4 flex items-center gap-2"><span className="text-green-500">🟢</span> Active</h2>
+            <div className="space-y-3">
+              {tests.filter(t => t.is_published && !t.is_manually_ended && (!t.available_until || new Date() < new Date(t.available_until))).map(t => (
+                <TestCard key={t.id} t={t} profile={profile} />
+              ))}
             </div>
-          </div>
-        ))}
+          </section>
+        )}
+
+        {/* Ended Tests */}
+        {tests?.filter(t => t.is_published && (t.is_manually_ended || (t.available_until && new Date() >= new Date(t.available_until)))).length > 0 && (
+          <section>
+            <h2 className="text-lg font-bold mb-4 flex items-center gap-2"><span className="text-red-500">🔴</span> Ended</h2>
+            <div className="space-y-3 opacity-75">
+              {tests.filter(t => t.is_published && (t.is_manually_ended || (t.available_until && new Date() >= new Date(t.available_until)))).map(t => (
+                <TestCard key={t.id} t={t} profile={profile} />
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </main>
     </>

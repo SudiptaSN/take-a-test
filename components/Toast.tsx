@@ -63,26 +63,26 @@ function ToastMessage({ toast, onDismiss }: { toast: ToastItem; onDismiss: () =>
     setTimeout(onDismiss, 300);
   };
 
-  const borderColors = {
-    success: 'border-l-green-500',
-    error: 'border-l-red-500',
-    info: 'border-l-blue-500',
+  const containerClasses = {
+    success: 'bg-green-950/80 border-green-800/50 text-green-100',
+    error: 'bg-red-950/80 border-red-800/50 text-red-100',
+    info: 'bg-zinc-900/90 border-zinc-800/50 text-zinc-100',
   };
 
-  const bgColors = {
-    success: 'bg-green-500',
-    error: 'bg-red-500',
-    info: 'bg-blue-500',
+  const progressColors = {
+    success: 'bg-green-500/50',
+    error: 'bg-red-500/50',
+    info: 'bg-orange-500/50',
   };
 
   return (
     <div 
-      className={`relative overflow-hidden pointer-events-auto flex items-center justify-between w-72 bg-zinc-800 text-zinc-100 rounded shadow-lg border-l-4 ${borderColors[toast.type]} transition-all duration-300 ease-out transform ${mounted ? 'translate-x-0 opacity-100' : 'translate-x-8 opacity-0'}`}
+      className={`relative overflow-hidden pointer-events-auto flex items-center justify-between w-80 backdrop-blur-md border rounded-xl shadow-2xl transition-all duration-300 ease-out transform ${containerClasses[toast.type]} ${mounted ? 'translate-x-0 opacity-100' : 'translate-x-8 opacity-0'}`}
     >
-      <div className="p-3 text-sm font-medium">{toast.message}</div>
+      <div className="p-4 text-sm font-medium">{toast.message}</div>
       <button 
         onClick={handleManualDismiss} 
-        className="p-3 text-zinc-400 hover:text-white transition-colors"
+        className="p-4 opacity-70 hover:opacity-100 transition-opacity"
         aria-label="Dismiss"
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -91,7 +91,7 @@ function ToastMessage({ toast, onDismiss }: { toast: ToastItem; onDismiss: () =>
         </svg>
       </button>
       <div 
-        className={`absolute bottom-0 left-0 h-1 ${bgColors[toast.type]}`} 
+        className={`absolute bottom-0 left-0 h-1 ${progressColors[toast.type]}`} 
         style={{ width: `${progress}%`, transition: 'width 3s linear' }} 
       />
     </div>

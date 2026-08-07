@@ -66,7 +66,23 @@ export default function EditTest() {
   }, [id, supabase]);
 
   const updateTest = async (patch: any) => {
-    setTest({ ...test, ...patch });
+    let newTest = { ...test, ...patch };
+
+    // Validate that available_until is strictly after available_from
+    if (patch.available_until !== undefined && patch.available_until && newTest.available_from) {
+      if (new Date(patch.available_until) <= new Date(newTest.available_from)) {
+        toast("Available Until must be after Available From", "error");
+        return;
+      }
+    }
+    if (patch.available_from !== undefined && patch.available_from && newTest.available_until) {
+      if (new Date(patch.available_from) >= new Date(newTest.available_until)) {
+        toast("Available From must be before Available Until", "error");
+        return;
+      }
+    }
+
+    setTest(newTest);
     await supabase.from("tests").update(patch).eq("id", id);
   };
 
@@ -162,7 +178,7 @@ export default function EditTest() {
       })).filter((_, idx) => questions[idx].type !== "long_text");
       if (keyRows.length) await supabase.from("answer_keys").upsert(keyRows);
     }
-    toast("Questions saved successfully!", "success");
+    toast("Changes saved successfully", "success");
     setSaving(false);
   };
 
@@ -262,6 +278,20 @@ export default function EditTest() {
                 />
               </div>
             </div>
+
+            {test.is_published && !test.available_until && (
+              <label className="flex items-start gap-3 p-4 rounded-xl border border-red-900/30 bg-red-950/10 hover:border-red-900/50 transition cursor-pointer group mt-4">
+                <div className="relative shrink-0 mt-1">
+                  <input type="checkbox" className="sr-only peer" checked={test.is_manually_ended || false} onChange={(e) => updateTest({ is_manually_ended: e.target.checked })} />
+                  <div className="w-10 h-6 rounded-full transition-colors bg-zinc-700 peer-checked:bg-red-500"></div>
+                  <div className="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-4"></div>
+                </div>
+                <div>
+                  <div className="font-medium text-red-400 group-hover:text-red-300 transition">Manually End Test</div>
+                  <div className="text-xs text-red-400/70 mt-0.5">Because no "Available Until" date is set, you can turn this on to instantly end the test and prevent anyone else from taking it.</div>
+                </div>
+              </label>
+            )}
           </div>
         </section>
 
@@ -274,13 +304,22 @@ export default function EditTest() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <label className="flex items-start gap-3 p-4 rounded-xl border border-zinc-800 bg-zinc-950 hover:border-zinc-700 transition cursor-pointer group">
               <div className="relative shrink-0 mt-1">
-                <input type="checkbox" className="sr-only peer" checked={test.is_published} onChange={(e) => updateTest({ is_published: e.target.checked })} />
+                <input 
+                  type="checkbox" 
+                  className="sr-only peer" 
+                  checked={test.is_published} 
+                  onChange={(e) => {
+                    const patch: any = { is_published: e.target.checked };
+                    if (!e.target.checked) patch.is_manually_ended = false;
+                    updateTest(patch);
+                  }} 
+                />
                 <div className="w-10 h-6 rounded-full transition-colors bg-zinc-700 peer-checked:bg-orange-500"></div>
                 <div className="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-4"></div>
               </div>
               <div>
                 <div className="font-medium text-zinc-200 group-hover:text-white transition">Published</div>
-                <div className="text-xs text-zinc-500 mt-0.5">Test is visible and can be started by candidates.</div>
+                <div className="text-xs text-zinc-500 mt-0.5">Test is visible to candidates on their dashboard (allows taking if active, or viewing results if ended).</div>
               </div>
             </label>
 

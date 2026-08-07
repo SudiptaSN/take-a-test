@@ -1,0 +1,1 @@
+ALTER TABLE tests ADD COLUMN is_manually_ended BOOLEAN DEFAULT false NOT NULL;

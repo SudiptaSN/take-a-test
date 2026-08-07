@@ -27,11 +27,11 @@ export default async function TakeTest({ params }: { params: Promise<{ id: strin
       </main>
     );
   }
-  if (test.available_until && now > new Date(test.available_until)) {
+  if ((test.available_until && now > new Date(test.available_until)) || test.is_manually_ended) {
     return (
       <main className="max-w-xl mx-auto p-10 text-center">
         <h1 className="text-2xl font-bold">Exam has ended</h1>
-        <p className="mt-2 text-zinc-400">This test closed on {formatIST(test.available_until)}.</p>
+        <p className="mt-2 text-zinc-400">This test is no longer accepting new attempts.</p>
       </main>
     );
   }

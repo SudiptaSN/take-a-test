@@ -12,21 +12,41 @@ export interface DateTimePickerProps {
 export default function DateTimePicker({ value, onChange, placeholder = 'Select date & time...', label }: DateTimePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   
+  const initialDate = value ? new Date(value) : null;
+  const isInitialValid = initialDate && !isNaN(initialDate.getTime());
+
   // Internal state for calendar viewing (which month/year is shown)
-  const [viewDate, setViewDate] = useState(() => {
-    if (value) {
-      const d = new Date(value);
-      if (!isNaN(d.getTime())) return d;
-    }
-    return new Date();
-  });
+  const [viewDate, setViewDate] = useState(() => isInitialValid ? initialDate : new Date());
+  
+  const [internalDate, setInternalDate] = useState<Date | null>(isInitialValid ? initialDate : null);
+  const internalDateRef = useRef<Date | null>(internalDate);
 
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Sync internal state when opening
+  useEffect(() => {
+    if (isOpen) {
+      const d = value ? new Date(value) : null;
+      const validD = d && !isNaN(d.getTime()) ? d : null;
+      setInternalDate(validD);
+      internalDateRef.current = validD;
+      if (validD) setViewDate(validD);
+    }
+  }, [isOpen, value]);
+
+  // Apply changes
+  const applyChanges = () => {
+    if (internalDateRef.current) {
+      onChange(internalDateRef.current.toISOString());
+    }
+    setIsOpen(false);
+  };
 
   // Close on click outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        // Just close and discard changes
         setIsOpen(false);
       }
     }
@@ -46,23 +66,21 @@ export default function DateTimePicker({ value, onChange, placeholder = 'Select 
     }
   }, [value, isOpen]);
 
-  const selectedDate = value ? new Date(value) : null;
-  const isSelectedDateValid = selectedDate && !isNaN(selectedDate.getTime());
-
   const handleDateSelect = (year: number, month: number, date: number) => {
-    let newDate = selectedDate && !isNaN(selectedDate.getTime()) ? new Date(selectedDate) : new Date();
+    let newDate = internalDate ? new Date(internalDate) : new Date();
     newDate.setFullYear(year, month, date);
     
     // if there was no previously selected date, set to midnight, otherwise preserve time
-    if (!isSelectedDateValid) {
+    if (!internalDate) {
       newDate.setHours(0, 0, 0, 0);
     }
-    onChange(newDate.toISOString());
+    setInternalDate(newDate);
+    internalDateRef.current = newDate;
   };
 
   const handleTimeChange = (type: 'hour' | 'minute', val: number) => {
-    let newDate = selectedDate && !isNaN(selectedDate.getTime()) ? new Date(selectedDate) : new Date();
-    if (!isSelectedDateValid) {
+    let newDate = internalDate ? new Date(internalDate) : new Date();
+    if (!internalDate) {
         // Just set date to today if changing time first
         const now = new Date();
         newDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -74,16 +92,18 @@ export default function DateTimePicker({ value, onChange, placeholder = 'Select 
     } else {
       newDate.setMinutes(val);
     }
-    onChange(newDate.toISOString());
+    setInternalDate(newDate);
+    internalDateRef.current = newDate;
   };
   
   const getCustomDisplayFormat = () => {
-    if (!isSelectedDateValid) return '';
-    const m = selectedDate.toLocaleString('en-US', { month: 'short' });
-    const d = selectedDate.getDate();
-    const y = selectedDate.getFullYear();
-    let hr = selectedDate.getHours();
-    const min = selectedDate.getMinutes();
+    if (!isInitialValid) return '';
+    const dDate = initialDate!;
+    const m = dDate.toLocaleString('en-US', { month: 'short' });
+    const d = dDate.getDate();
+    const y = dDate.getFullYear();
+    let hr = dDate.getHours();
+    const min = dDate.getMinutes();
     const ampm = hr >= 12 ? 'PM' : 'AM';
     hr = hr % 12;
     hr = hr ? hr : 12; // 0 should be 12
@@ -146,7 +166,7 @@ export default function DateTimePicker({ value, onChange, placeholder = 'Select 
         onClick={() => setIsOpen(!isOpen)}
         className="w-full text-left bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-2 text-zinc-100 hover:bg-zinc-800/80 transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500/50"
       >
-        {isSelectedDateValid ? (
+        {isInitialValid ? (
           <span className="flex items-center justify-between w-full">
             <span>{getCustomDisplayFormat()}</span>
             <div
@@ -195,10 +215,10 @@ export default function DateTimePicker({ value, onChange, placeholder = 'Select 
 
           <div className="grid grid-cols-7 gap-1">
             {days.map((day, idx) => {
-              const isSelected = isSelectedDateValid && 
-                selectedDate.getFullYear() === day.year && 
-                selectedDate.getMonth() === day.month && 
-                selectedDate.getDate() === day.date;
+              const isSelected = internalDate && 
+                internalDate.getFullYear() === day.year && 
+                internalDate.getMonth() === day.month && 
+                internalDate.getDate() === day.date;
                 
               const isToday = today.getFullYear() === day.year && 
                 today.getMonth() === day.month && 
@@ -219,7 +239,7 @@ export default function DateTimePicker({ value, onChange, placeholder = 'Select 
 
           <div className="mt-4 pt-4 border-t border-zinc-800 flex gap-2 justify-center items-center">
             <select
-              value={isSelectedDateValid ? selectedDate.getHours().toString().padStart(2, '0') : '00'}
+              value={internalDate ? internalDate.getHours().toString().padStart(2, '0') : '00'}
               onChange={(e) => handleTimeChange('hour', parseInt(e.target.value))}
               className="bg-zinc-800 border border-zinc-700 text-zinc-100 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-orange-500"
             >
@@ -231,7 +251,7 @@ export default function DateTimePicker({ value, onChange, placeholder = 'Select 
             </select>
             <span className="text-zinc-400 font-bold">:</span>
             <select
-              value={isSelectedDateValid ? selectedDate.getMinutes().toString().padStart(2, '0') : '00'}
+              value={internalDate ? internalDate.getMinutes().toString().padStart(2, '0') : '00'}
               onChange={(e) => handleTimeChange('minute', parseInt(e.target.value))}
               className="bg-zinc-800 border border-zinc-700 text-zinc-100 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-orange-500"
             >
@@ -241,6 +261,16 @@ export default function DateTimePicker({ value, onChange, placeholder = 'Select 
                 </option>
               ))}
             </select>
+          </div>
+          
+          <div className="mt-4 pt-4 border-t border-zinc-800 flex justify-end">
+            <button
+              type="button"
+              onClick={applyChanges}
+              className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-medium px-4 py-1.5 rounded-lg transition-colors"
+            >
+              Apply
+            </button>
           </div>
         </div>
       )}
