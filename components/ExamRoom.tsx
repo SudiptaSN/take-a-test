@@ -13,17 +13,32 @@ const MINOR_STRIKE_THRESHOLD = 3;
 // Head pose: yaw ratio beyond this = "looking away"
 const HEAD_YAW_THRESHOLD = 0.38;
 
-export default function ExamRoom({ test, questions, attempt }: { test: any; questions: Q[]; attempt: any }) {
+export default function ExamRoom({ test, questions, attempt, existingAnswers = [], initialViolations = 0 }: { test: any; questions: Q[]; attempt: any; existingAnswers?: any[]; initialViolations?: number }) {
   const supabase = createClient();
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const [phase, setPhase] = useState<"prep" | "onboarding" | "active" | "submitted">("prep");
-  const [answers, setAnswers] = useState<Record<string, any>>({});
-  const [violations, setViolations] = useState(0);
+  
+  // Initialize answers from database if resuming
+  const [answers, setAnswers] = useState<Record<string, any>>(() => {
+    const acc: Record<string, any> = {};
+    for (const a of existingAnswers) acc[a.question_id] = a.response;
+    return acc;
+  });
+  
+  // Restore violations so they can't clear strikes by refreshing
+  const [violations, setViolations] = useState(initialViolations);
   const [banner, setBanner] = useState<string | null>(null);
-  const [idx, setIdx] = useState(0);
+  
+  // Jump to first unanswered question if resuming
+  const [idx, setIdx] = useState(() => {
+    for (let i = 0; i < questions.length; i++) {
+      if (!existingAnswers.find(a => a.question_id === questions[i].id)) return i;
+    }
+    return 0; // If all answered, start at 0
+  });
   const [now, setNow] = useState<number>(Date.now());
   const [isFullscreen, setIsFullscreen] = useState(true);
   const [isPaused, setIsPaused] = useState(!!attempt.paused_at);

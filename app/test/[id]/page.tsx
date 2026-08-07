@@ -154,5 +154,23 @@ export default async function TakeTest({ params }: { params: Promise<{ id: strin
     );
   }
 
-  return <ExamRoom test={test} questions={questions || []} attempt={attempt} />;
+  let existingAnswers: any[] = [];
+  let initialViolations = 0;
+  
+  if (attempt.status === "in_progress") {
+    // 1. Fetch existing answers so they don't start from scratch
+    const { data: ans } = await supabase.from("answers").select("*").eq("attempt_id", attempt.id);
+    if (ans) existingAnswers = ans;
+    
+    // 2. Fetch existing violations so they can't refresh to clear their strike counter
+    const { data: events } = await supabase.from("proctor_events").select("kind").eq("attempt_id", attempt.id);
+    if (events) {
+      initialViolations = events.filter(e => 
+        !["reference_face", "exam_started", "fullscreen_unavailable", "snapshot", "snapshot_sprite"].includes(e.kind) &&
+        !e.kind.startsWith("warning_")
+      ).length;
+    }
+  }
+
+  return <ExamRoom test={test} questions={questions || []} attempt={attempt} existingAnswers={existingAnswers} initialViolations={initialViolations} />;
 }
