@@ -11,7 +11,7 @@ export default async function Dashboard() {
   if (profile?.role === "admin") redirect("/admin");
 
   const { data: allTests } = await supabase
-    .from("tests").select("id, title, description, duration_minutes, invite_only")
+    .from("tests").select("id, title, description, duration_minutes, invite_only, is_leaderboard_public")
     .eq("is_published", true).order("created_at", { ascending: false });
   // For invite_only tests, candidate must have an invite row matching their email
   const { data: myInvites } = await supabase
@@ -78,7 +78,10 @@ export default async function Dashboard() {
                   {a?.status === 'terminated' && <span className='text-xs px-2 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/20'>✗ Terminated</span>}
                 </div>
               </div>
-              <div>
+              <div className="flex items-center gap-2">
+                {t.is_leaderboard_public && (
+                  <Link href={`/test/${t.id}/leaderboard`} className="btn-secondary !text-orange-400 !border-orange-500/20 hover:!bg-orange-500/10">🏆 Leaderboard</Link>
+                )}
                 {a?.status === "submitted" || a?.status === "terminated" ? (
                   <Link href={`/test/${t.id}`} className="btn-secondary">View Results</Link>
                 ) : (

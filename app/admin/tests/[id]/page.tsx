@@ -273,7 +273,11 @@ export default function EditTest() {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <label className="flex items-start gap-3 p-4 rounded-xl border border-zinc-800 bg-zinc-950 hover:border-zinc-700 transition cursor-pointer group">
-              <input type="checkbox" className="mt-1" checked={test.is_published} onChange={(e) => updateTest({ is_published: e.target.checked })} />
+              <div className="relative shrink-0 mt-1">
+                <input type="checkbox" className="sr-only peer" checked={test.is_published} onChange={(e) => updateTest({ is_published: e.target.checked })} />
+                <div className="w-10 h-6 rounded-full transition-colors bg-zinc-700 peer-checked:bg-orange-500"></div>
+                <div className="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-4"></div>
+              </div>
               <div>
                 <div className="font-medium text-zinc-200 group-hover:text-white transition">Published</div>
                 <div className="text-xs text-zinc-500 mt-0.5">Test is visible and can be started by candidates.</div>
@@ -281,7 +285,11 @@ export default function EditTest() {
             </label>
 
             <label className="flex items-start gap-3 p-4 rounded-xl border border-zinc-800 bg-zinc-950 hover:border-zinc-700 transition cursor-pointer group">
-              <input type="checkbox" className="mt-1" checked={test.invite_only || false} onChange={(e) => updateTest({ invite_only: e.target.checked })} />
+              <div className="relative shrink-0 mt-1">
+                <input type="checkbox" className="sr-only peer" checked={test.invite_only || false} onChange={(e) => updateTest({ invite_only: e.target.checked })} />
+                <div className="w-10 h-6 rounded-full transition-colors bg-zinc-700 peer-checked:bg-orange-500"></div>
+                <div className="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-4"></div>
+              </div>
               <div>
                 <div className="font-medium text-zinc-200 group-hover:text-white transition">Invite-only</div>
                 <div className="text-xs text-zinc-500 mt-0.5">Only candidates on the Invites list can see or take this test.</div>
@@ -289,7 +297,11 @@ export default function EditTest() {
             </label>
 
             <label className="flex items-start gap-3 p-4 rounded-xl border border-zinc-800 bg-zinc-950 hover:border-zinc-700 transition cursor-pointer group">
-              <input type="checkbox" className="mt-1" checked={test.is_leaderboard_public || false} onChange={(e) => updateTest({ is_leaderboard_public: e.target.checked })} />
+              <div className="relative shrink-0 mt-1">
+                <input type="checkbox" className="sr-only peer" checked={test.is_leaderboard_public || false} onChange={(e) => updateTest({ is_leaderboard_public: e.target.checked })} />
+                <div className="w-10 h-6 rounded-full transition-colors bg-zinc-700 peer-checked:bg-orange-500"></div>
+                <div className="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-4"></div>
+              </div>
               <div>
                 <div className="font-medium text-zinc-200 group-hover:text-white transition">Public Leaderboard</div>
                 <div className="text-xs text-zinc-500 mt-0.5">Enable "Wall of Flame" for candidates to see each other's scores.</div>
@@ -297,7 +309,11 @@ export default function EditTest() {
             </label>
 
             <label className="flex items-start gap-3 p-4 rounded-xl border border-red-900/30 bg-red-950/10 hover:border-red-900/50 transition cursor-pointer group">
-              <input type="checkbox" className="mt-1 accent-red-500" checked={test.is_hardcore_mode || false} onChange={(e) => updateTest({ is_hardcore_mode: e.target.checked })} />
+              <div className="relative shrink-0 mt-1">
+                <input type="checkbox" className="sr-only peer" checked={test.is_hardcore_mode || false} onChange={(e) => updateTest({ is_hardcore_mode: e.target.checked })} />
+                <div className="w-10 h-6 rounded-full transition-colors bg-zinc-700 peer-checked:bg-red-500"></div>
+                <div className="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-4"></div>
+              </div>
               <div>
                 <div className="font-medium text-red-400 group-hover:text-red-300 transition">Hardcore Mode</div>
                 <div className="text-xs text-red-400/70 mt-0.5">Candidates cannot go backward to change their answers.</div>
@@ -305,7 +321,11 @@ export default function EditTest() {
             </label>
             
             <label className="flex items-start gap-3 p-4 rounded-xl border border-amber-900/30 bg-amber-950/10 hover:border-amber-900/50 transition cursor-pointer group col-span-1 md:col-span-2">
-              <input type="checkbox" className="mt-1 accent-amber-500" checked={test.require_seb || false} onChange={(e) => updateTest({ require_seb: e.target.checked })} />
+              <div className="relative shrink-0 mt-1">
+                <input type="checkbox" className="sr-only peer" checked={test.require_seb || false} onChange={(e) => updateTest({ require_seb: e.target.checked })} />
+                <div className="w-10 h-6 rounded-full transition-colors bg-zinc-700 peer-checked:bg-amber-500"></div>
+                <div className="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-4"></div>
+              </div>
               <div>
                 <div className="font-medium text-amber-500 group-hover:text-amber-400 transition">Require Safe Exam Browser</div>
                 <div className="text-xs text-amber-500/70 mt-0.5">Blocks normal browsers. Enforces lockdown mode (no alt-tab, screen share, or clipboard).</div>
@@ -326,47 +346,49 @@ export default function EditTest() {
         </section>
 
         {/* Publishing & Sharing */}
-        <section className="card space-y-4">
-          <h2 className="text-lg font-semibold text-zinc-100 flex items-center gap-2">
-            <span className="text-orange-500">📢</span> Publishing & Sharing
-          </h2>
+        {(test.invite_only || test.is_published) && (
+          <section className="card space-y-4">
+            <h2 className="text-lg font-semibold text-zinc-100 flex items-center gap-2">
+              <span className="text-orange-500">📢</span> Publishing & Sharing
+            </h2>
 
-          {test.invite_only && (
-            <div className="flex flex-wrap items-center gap-3">
-              <a href={`/admin/tests/${id}/invites`} className="btn-secondary">
-                Manage individual invites →
-              </a>
-              <button onClick={handleInviteAll} className="btn-secondary bg-blue-500/10 border-blue-500/20 text-blue-400 hover:bg-blue-500/20 hover:border-blue-500/30">
-                + Invite all registered candidates
-              </button>
-            </div>
-          )}
-
-          {test.is_published && (
-            <div className="space-y-3 pt-4 border-t border-zinc-800">
-              <div className="text-sm bg-zinc-950 border border-zinc-800 rounded-lg p-3">
-                <div className="text-zinc-400 mb-1">Direct Share Link:</div>
-                <code className="text-orange-400 break-all select-all">{link}</code>
-                {test.access_code && <div className="text-zinc-500 mt-2">Required Code: <code className="font-mono text-zinc-300 bg-zinc-800 px-1.5 py-0.5 rounded">{test.access_code}</code></div>}
+            {test.invite_only && (
+              <div className="flex flex-wrap items-center gap-3">
+                <a href={`/admin/tests/${id}/invites`} className="btn-secondary">
+                  Manage individual invites →
+                </a>
+                <button onClick={handleInviteAll} className="btn-secondary bg-blue-500/10 border-blue-500/20 text-blue-400 hover:bg-blue-500/20 hover:border-blue-500/30">
+                  + Invite all registered candidates
+                </button>
               </div>
-              
-              {test.require_seb && (
-                <div className="text-sm bg-amber-950/20 border border-amber-900/50 rounded-lg p-4 text-amber-200">
-                  <div className="font-semibold text-amber-500 mb-1">Safe Exam Browser Setup</div>
-                  <p className="text-amber-200/70 mb-3">Distribute the SEB configuration file to candidates. Opening it will automatically launch the browser and navigate to this test.</p>
-                  <div className="flex flex-wrap gap-4 items-center">
-                    <a className="btn-secondary bg-amber-500/10 border-amber-500/20 text-amber-400 hover:bg-amber-500/20 text-xs" href={`/api/seb/${id}`}>
-                      Download .seb config
-                    </a>
-                    <a className="text-xs text-amber-500/50 hover:text-amber-400 underline" href="https://safeexambrowser.org/download_en.html" target="_blank" rel="noreferrer">
-                      Get SEB client
-                    </a>
-                  </div>
+            )}
+
+            {test.is_published && (
+              <div className="space-y-3 pt-4 border-t border-zinc-800">
+                <div className="text-sm bg-zinc-950 border border-zinc-800 rounded-lg p-3">
+                  <div className="text-zinc-400 mb-1">Direct Share Link:</div>
+                  <code className="text-orange-400 break-all select-all">{link}</code>
+                  {test.access_code && <div className="text-zinc-500 mt-2">Required Code: <code className="font-mono text-zinc-300 bg-zinc-800 px-1.5 py-0.5 rounded">{test.access_code}</code></div>}
                 </div>
-              )}
-            </div>
-          )}
-        </section>
+                
+                {test.require_seb && (
+                  <div className="text-sm bg-amber-950/20 border border-amber-900/50 rounded-lg p-4 text-amber-200">
+                    <div className="font-semibold text-amber-500 mb-1">Safe Exam Browser Setup</div>
+                    <p className="text-amber-200/70 mb-3">Distribute the SEB configuration file to candidates. Opening it will automatically launch the browser and navigate to this test.</p>
+                    <div className="flex flex-wrap gap-4 items-center">
+                      <a className="btn-secondary bg-amber-500/10 border-amber-500/20 text-amber-400 hover:bg-amber-500/20 text-xs" href={`/api/seb/${id}`}>
+                        Download .seb config
+                      </a>
+                      <a className="text-xs text-amber-500/50 hover:text-amber-400 underline" href="https://safeexambrowser.org/download_en.html" target="_blank" rel="noreferrer">
+                        Get SEB client
+                      </a>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </section>
+        )}
 
         {/* Results & Sync */}
         <section className="card space-y-4">
@@ -375,43 +397,54 @@ export default function EditTest() {
           </h2>
           <p className="text-sm text-zinc-400">Control how and when candidates see their results, and push scores to Discord.</p>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-4">
             <label className="flex items-start gap-3 p-4 rounded-xl border border-zinc-800 bg-zinc-950 hover:border-zinc-700 transition cursor-pointer group">
-              <input type="checkbox" className="mt-1" checked={test.auto_publish_results || false} onChange={(e) => updateTest({ auto_publish_results: e.target.checked })} />
+              <div className="relative shrink-0 mt-1">
+                <input type="checkbox" className="sr-only peer" checked={test.auto_publish_results || false} onChange={(e) => updateTest({ auto_publish_results: e.target.checked })} />
+                <div className="w-10 h-6 rounded-full transition-colors bg-zinc-700 peer-checked:bg-orange-500"></div>
+                <div className="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-4"></div>
+              </div>
               <div>
                 <div className="font-medium text-zinc-200 group-hover:text-white transition">Auto-publish Results</div>
-                <div className="text-xs text-zinc-500 mt-0.5">Candidates see their scores and the leaderboard immediately upon submission.</div>
-              </div>
-            </label>
-
-            <label className="flex items-start gap-3 p-4 rounded-xl border border-zinc-800 bg-zinc-950 hover:border-zinc-700 transition cursor-pointer group">
-              <input type="checkbox" className="mt-1" checked={test.results_published || false} onChange={(e) => updateTest({ results_published: e.target.checked })} />
-              <div>
-                <div className="font-medium text-zinc-200 group-hover:text-white transition">Manual Publish Override</div>
-                <div className="text-xs text-zinc-500 mt-0.5">Turn this on to manually publish all results if auto-publish was off.</div>
+                <div className="text-xs text-zinc-500 mt-0.5">Candidates see their scores instantly upon submission. If Public Leaderboard is enabled, they see that too.</div>
               </div>
             </label>
           </div>
 
-          <div className="pt-4 mt-4 border-t border-zinc-800 flex items-center justify-between">
-            <div>
-              <div className="text-sm font-medium text-zinc-300">Discord Hall of Fame</div>
-              <div className="text-xs text-zinc-500 mt-0.5">Manually push the finalized top scores to your Discord server.</div>
+          <div className="pt-4 mt-4 border-t border-zinc-800 flex flex-col gap-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm font-medium text-zinc-300">Manual Publish Override (MOM)</div>
+                <div className="text-xs text-zinc-500 mt-0.5">Manually reveal or hide all scores (useful if Auto-publish was turned off for suspense).</div>
+              </div>
+              <button 
+                onClick={() => updateTest({ results_published: !test.results_published })} 
+                className={`btn text-sm whitespace-nowrap ${test.results_published ? 'bg-zinc-700 hover:bg-zinc-600 shadow-none text-zinc-300 border border-zinc-600' : ''}`}
+              >
+                {test.results_published ? "Unpublish Results" : "Publish Results (MOM)"}
+              </button>
             </div>
-            <button 
-              onClick={async () => {
-                if (!confirm("Push the Hall of Fame to Discord? This will post the current top 3 scores.")) return;
-                const res = await fetch(`/api/admin/tests/${id}/push-discord`, { method: "POST" });
-                if (res.ok) {
-                  toast("Pushed to Discord successfully!", "success");
-                } else {
-                  toast("Failed to push to Discord", "error");
-                }
-              }} 
-              className="btn text-sm whitespace-nowrap"
-            >
-              Push to Discord
-            </button>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm font-medium text-zinc-300">Discord Hall of Fame</div>
+                <div className="text-xs text-zinc-500 mt-0.5">Manually push the finalized top 3 scores to your Discord server.</div>
+              </div>
+              <button 
+                onClick={async () => {
+                  if (!confirm("Push the Hall of Fame to Discord? This will post the current top 3 scores.")) return;
+                  const res = await fetch(`/api/admin/tests/${id}/push-discord`, { method: "POST" });
+                  if (res.ok) {
+                    toast("Pushed to Discord successfully!", "success");
+                  } else {
+                    toast("Failed to push to Discord", "error");
+                  }
+                }} 
+                className="btn text-sm whitespace-nowrap"
+              >
+                Push to Discord
+              </button>
+            </div>
           </div>
         </section>
 

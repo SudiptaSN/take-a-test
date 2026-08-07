@@ -149,14 +149,16 @@ export default function DateTimePicker({ value, onChange, placeholder = 'Select 
         {isSelectedDateValid ? (
           <span className="flex items-center justify-between w-full">
             <span>{getCustomDisplayFormat()}</span>
-            <button
-              type="button"
+            <div
+              role="button"
+              tabIndex={0}
               onClick={(e) => { e.stopPropagation(); onChange(''); }}
-              className="text-zinc-500 hover:text-red-400 transition-colors text-xs ml-2"
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); e.preventDefault(); onChange(''); } }}
+              className="text-zinc-500 hover:text-red-400 transition-colors text-xs ml-2 cursor-pointer"
               title="Clear date"
             >
               ✕
-            </button>
+            </div>
           </span>
         ) : <span className="text-zinc-500">{placeholder}</span>}
       </button>
